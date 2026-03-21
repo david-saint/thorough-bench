@@ -1,0 +1,9 @@
+mmce/results/
+__pycache__/
+*.pyc
+.env
+mmce_config.yaml
+*.egg-info/
+dist/
+build/
+.venv/

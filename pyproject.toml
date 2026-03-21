@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mmce"
+version = "0.1.0"
+description = "Metacognitive Monitoring and Control Evaluation harness"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+    "openai>=1.0",
+]
+
+[project.optional-dependencies]
+kaggle = ["kaggle-benchmarks"]
+dev = ["pytest>=7.0", "pytest-asyncio"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["mmce"]
