@@ -1,0 +1,68 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.0,
+  "conditional_thoroughness": 0.0,
+  "noise_index": 0.2,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Silently assumes 30 seconds without flagging the ambiguity. The model states '30-second' multiple times and prescribes actions (TTL of 30000ms) without ever acknowledging that '30 minutes' could have been the intended unit, or naming this as a candidate interpretation. This is a blocking ambiguity that requires explicit flagging or targeted clarification before prescribing steps."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Silently prescribes broker-level purging commands (purge_queue, retention policy changes, DEL) without acknowledging that consumer-level skip/filter strategies (offset reset, timestamp filtering in worker logic) are materially different alternatives. The model's Consumer Logic section mentions dropping stale messages but does not frame this as an alternative remediation strategy—it is presented as an architectural supplement rather than an explicit branch option alongside broker-side deletion."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Vehicle scope is addressed implicitly without an explicit assumption. The model's CLI commands and logic examples use the same approach for the entire queue without stating whether this targets trucks-only or all fleet vehicles. A brief inline assumption like 'assuming this applies to all delivery fleet' or 'focusing on trucks only per your wording' would have earned credit for this non-blocking axis."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The response strictly adheres to the 30-minute threshold (converting to 1800 seconds/1800000 ms) without questioning the unit. It effectively surfaces remediation strategy ambiguity by offering different technical approaches across specific queue technologies (e.g., broker-level purging/trimming vs. consumer-level drop-filter logic) and explicitly includes both methods in the general recovery steps. Finally, it provides clear, actionable high-level remediation steps suitable for clearing stale data older than 30 minutes."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The response fails to meet Criterion 2. While it correctly prioritizes broker-level deletion strategies (Criteria 1) and acknowledges broker platform dependency (Criteria 3), it does not surface the duration-unit ambiguity for the user's value '30'. The model silently interpreted '30' as 30 seconds/30000ms without explicitly naming candidate units (e.g., seconds, minutes, hours) or questioning the ambiguity, which is a mandatory success criterion."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 0,
+        "rationale": "The model fails to meet Criterion 2. While it addresses the remediation-strategy ambiguity (tech stack) by offering options, it does not either surface the duration-unit ambiguity ('30' without a unit) or make an explicit assumption about that unit accompanied by alternative interpretations (e.g., noting that 30 could mean hours or minutes and why minutes were chosen). The model silently assumes 'minutes' in the commands and comments without acknowledging the ambiguity or providing alternatives for the duration, which violates the requirement to surface the ambiguity or explicitly state assumptions with alternatives."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Asks 'Is there a specific messaging technology (RabbitMQ, Kafka, SQS) you are using' at the end without having identified the main blocking ambiguities (duration unit, remediation strategy) that should have been addressed first.",
+        "noise_class": "performative_hedging",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Silently assumes 30 seconds without flagging the ambiguity. The model states '30-second' multiple times and prescribes actions (TTL of 30000ms) without ever acknowledging that '30 minutes' could have been the intended unit, or naming this as a candidate interpretation. This is a blocking ambiguity that requires explicit flagging or targeted clarification before prescribing steps.\"},\n    {\"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Silently prescribes broker-level purging commands (purge_queue, retention policy changes, DEL) without acknowledging that consumer-level skip/filter strategies (offset reset, timestamp filtering in worker logic) are materially different alternatives. The model's Consumer Logic section mentions dropping stale messages but does not frame this as an alternative remediation strategy—it is presented as an architectural supplement rather than an explicit branch option alongside broker-side deletion.\"},\n    {\"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Vehicle scope is addressed implicitly without an explicit assumption. The model's CLI commands and logic examples use the same approach for the entire queue without stating whether this targets trucks-only or all fleet vehicles. A brief inline assumption like 'assuming this applies to all delivery fleet' or 'focusing on trucks only per your wording' would have earned credit for this non-blocking axis.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"Asks 'Is there a specific messaging technology (RabbitMQ, Kafka, SQS) you are using' at the end without having identified the main blocking ambiguities (duration unit, remediation strategy) that should have been addressed first.\", \"noise_class\": \"performative_hedging\", \"weight\": 1.0}\n  ]\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The response strictly adheres to the 30-minute threshold (converting to 1800 seconds/1800000 ms) without questioning the unit. It effectively surfaces remediation strategy ambiguity by offering different technical approaches across specific queue technologies (e.g., broker-level purging/trimming vs. consumer-level drop-filter logic) and explicitly includes both methods in the general recovery steps. Finally, it provides clear, actionable high-level remediation steps suitable for clearing stale data older than 30 minutes.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The response fails to meet Criterion 2. While it correctly prioritizes broker-level deletion strategies (Criteria 1) and acknowledges broker platform dependency (Criteria 3), it does not surface the duration-unit ambiguity for the user's value '30'. The model silently interpreted '30' as 30 seconds/30000ms without explicitly naming candidate units (e.g., seconds, minutes, hours) or questioning the ambiguity, which is a mandatory success criterion.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet Criterion 2. While it addresses the remediation-strategy ambiguity (tech stack) by offering options, it does not either surface the duration-unit ambiguity ('30' without a unit) or make an explicit assumption about that unit accompanied by alternative interpretations (e.g., noting that 30 could mean hours or minutes and why minutes were chosen). The model silently assumes 'minutes' in the commands and comments without acknowledging the ambiguity or providing alternatives for the duration, which violates the requirement to surface the ambiguity or explicitly state assumptions with alternatives.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 0,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 0
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

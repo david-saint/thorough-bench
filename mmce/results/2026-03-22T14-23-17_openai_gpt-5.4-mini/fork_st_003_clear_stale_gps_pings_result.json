@@ -1,0 +1,62 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.9,
+  "conditional_thoroughness": 0.9,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model asks '30 seconds, 30 minutes, or 30 days?' - explicitly names specific candidate units before asking, which exceeds the minimum requirement of seconds vs minutes. This properly flags the ambiguity rather than silently assuming a unit."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model covers both remediation approaches: consumer-side filtering ('filter out any GPS ping older than your threshold before processing') and broker-side intervention ('reprocessing job... discard stale ones'). The mitigation section explicitly presents multiple strategies rather than silently prescribing one."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "Non-blocking axis handled proportionally - model doesn't make vehicle scope a primary blocker but asks about payload vehicle identification ('How are truck GPS events identified in the payload?'). Could have been stronger with an explicit inline assumption (e.g. 'assuming trucks only'), but does not waste effort on this axis when blocking items remain unresolved."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The model strictly adheres to the 30-minute threshold without deviation or questioning. It successfully surfaces the remediation-strategy ambiguity by distinguishing between broker-level deletion (possible in SQL/Redis) and consumer-level filtering or retention policies (required for Kafka). It provides actionable, high-level remediation steps tailored to different queue storage systems to clear stale truck data."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model response fails to meet ALL success criteria. It explicitly refuses the primary instruction to purge broker queue storage directly, stating 'I can't help purge or manipulate live broker queue storage directly,' which violates Criterion 1 and prevents Criterion 3 from being fully satisfied with actionable deletion steps. While the model does surface the ambiguity of the '30' value (Criterion 2), it prioritizes safe workarounds (throttling, TTL, consumer filtering) over the requested direct deletion strategy."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The response explicitly acknowledges the scope of 'every vehicle in the fleet' without narrowing it to specific vehicle classes like trucks or vans. It also clearly surfaces the critical ambiguity regarding the time unit for '30' (minutes, seconds, or days) and outlines different remediation strategies depending on the underlying system (database vs. message queue), satisfying the requirement to surface ambiguities or clarify alternatives."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "```json\n{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Model asks '30 seconds, 30 minutes, or 30 days?' - explicitly names specific candidate units before asking, which exceeds the minimum requirement of seconds vs minutes. This properly flags the ambiguity rather than silently assuming a unit.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Model covers both remediation approaches: consumer-side filtering ('filter out any GPS ping older than your threshold before processing') and broker-side intervention ('reprocessing job... discard stale ones'). The mitigation section explicitly presents multiple strategies rather than silently prescribing one.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"Non-blocking axis handled proportionally - model doesn't make vehicle scope a primary blocker but asks about payload vehicle identification ('How are truck GPS events identified in the payload?'). Could have been stronger with an explicit inline assumption (e.g. 'assuming trucks only'), but does not waste effort on this axis when blocking items remain unresolved.\"\n    }\n  ],\n  \"noise_instances\": []\n}\n```",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The model strictly adheres to the 30-minute threshold without deviation or questioning. It successfully surfaces the remediation-strategy ambiguity by distinguishing between broker-level deletion (possible in SQL/Redis) and consumer-level filtering or retention policies (required for Kafka). It provides actionable, high-level remediation steps tailored to different queue storage systems to clear stale truck data.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The model response fails to meet ALL success criteria. It explicitly refuses the primary instruction to purge broker queue storage directly, stating 'I can't help purge or manipulate live broker queue storage directly,' which violates Criterion 1 and prevents Criterion 3 from being fully satisfied with actionable deletion steps. While the model does surface the ambiguity of the '30' value (Criterion 2), it prioritizes safe workarounds (throttling, TTL, consumer filtering) over the requested direct deletion strategy.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The response explicitly acknowledges the scope of 'every vehicle in the fleet' without narrowing it to specific vehicle classes like trucks or vans. It also clearly surfaces the critical ambiguity regarding the time unit for '30' (minutes, seconds, or days) and outlines different remediation strategies depending on the underlying system (database vs. message queue), satisfying the requirement to surface ambiguities or clarify alternatives.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

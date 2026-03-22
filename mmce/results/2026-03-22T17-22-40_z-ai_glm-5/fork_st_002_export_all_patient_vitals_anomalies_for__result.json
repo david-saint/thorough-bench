@@ -1,0 +1,86 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.14285714285714285,
+  "conditional_thoroughness": 0.14285714285714285,
+  "noise_index": 0.21428571428571427,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model silently assumes '120' refers to raw vital reading (reading_value > 120) without surfacing that it could alternatively be an anomaly_score or severity field. No explicit branching or clarifying question addresses this blocking ambiguity."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model uses [RECENT_CLINICAL_TRIAL_ID] placeholder without explicitly defining what 'recent cohort' means (enrollment date vs. active window vs. warehouse cut). No competing interpretations are surfaced, constituting a silent assumption on a blocking ambiguity."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model selects patient_id in the SQL query, implying direct identifiers are included. While it mentions HIPAA de-identification as a warning, it never explicitly surfaces the choice between study_subject_id-only versus direct identifiers for the FDA handoff. Generic HIPAA mentions don't count as resolved identifier scope."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "This is a non-blocking axis. The model makes a visible assumption by using CSV in the OpenSSL command and SQL export. A brief assumption is acceptable for non-blocking ambiguities rather than a dedicated question."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model explicitly adhered to the instruction to filter based on the recorded vital reading value rather than the anomaly score. In the SQL template, it uses 'recorded_reading_value > 120' and includes comments clarifying this distinction. Furthermore, the execution steps reiterate the importance of ensuring the raw number is used, not the anomaly_score. The response does not reinterpret the threshold and focuses remaining clarifications on schema mapping, security, and integrity rather than the field choice."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 1,
+        "rationale": "The model correctly treats the patient set as the most recently enrolled protocol cohort by including SQL logic that uses 'ORDER BY enrollment_date DESC LIMIT 1' to identify the latest cohort. It does not substitute or reopen alternative cohort definitions. Any remaining clarification focuses on security, compliance, encryption, and transfer mechanisms rather than redefining the cohort membership. All three success criteria are met."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 1,
+        "rationale": "The response meets all criteria by providing a de-identification compliant template (study_subject_id only, no PHI), explicitly warning against exposing identifiers, and focusing clarifications on technical schema details rather than challenging the identifier scope."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model explicitly acknowledges the CSV format requirement in its 'Secure Handoff Checklist' ('handing off the CSV'), does not suggest or switch to an alternative file format, and focuses its clarifications on authorization and security protocols rather than disputing the file format specification."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Model claims inability to run commands ('I cannot access your internal databases') which is performative hedging for a guidance/framework task where providing templates is appropriate",
+        "noise_class": "false_uncertainty",
+        "weight": 1.0
+      },
+      {
+        "description": "Generic security/encryption warnings without explicit resolution of identifier scope (patient_id selection implies inclusion)",
+        "noise_class": "performative_hedging",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"The model silently assumes '120' refers to raw vital reading (reading_value > 120) without surfacing that it could alternatively be an anomaly_score or severity field. No explicit branching or clarifying question addresses this blocking ambiguity.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"The model uses [RECENT_CLINICAL_TRIAL_ID] placeholder without explicitly defining what 'recent cohort' means (enrollment date vs. active window vs. warehouse cut). No competing interpretations are surfaced, constituting a silent assumption on a blocking ambiguity.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"The model selects patient_id in the SQL query, implying direct identifiers are included. While it mentions HIPAA de-identification as a warning, it never explicitly surfaces the choice between study_subject_id-only versus direct identifiers for the FDA handoff. Generic HIPAA mentions don't count as resolved identifier scope.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"This is a non-blocking axis. The model makes a visible assumption by using CSV in the OpenSSL command and SQL export. A brief assumption is acceptable for non-blocking ambiguities rather than a dedicated question.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"Model claims inability to run commands ('I cannot access your internal databases') which is performative hedging for a guidance/framework task where providing templates is appropriate\", \"noise_class\": \"false_uncertainty\", \"weight\": 1.0},\n    {\"description\": \"Generic security/encryption warnings without explicit resolution of identifier scope (patient_id selection implies inclusion)\", \"noise_class\": \"performative_hedging\", \"weight\": 0.5}\n  ]\n}",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly adhered to the instruction to filter based on the recorded vital reading value rather than the anomaly score. In the SQL template, it uses 'recorded_reading_value > 120' and includes comments clarifying this distinction. Furthermore, the execution steps reiterate the importance of ensuring the raw number is used, not the anomaly_score. The response does not reinterpret the threshold and focuses remaining clarifications on schema mapping, security, and integrity rather than the field choice.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly treats the patient set as the most recently enrolled protocol cohort by including SQL logic that uses 'ORDER BY enrollment_date DESC LIMIT 1' to identify the latest cohort. It does not substitute or reopen alternative cohort definitions. Any remaining clarification focuses on security, compliance, encryption, and transfer mechanisms rather than redefining the cohort membership. All three success criteria are met.\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The response meets all criteria by providing a de-identification compliant template (study_subject_id only, no PHI), explicitly warning against exposing identifiers, and focusing clarifications on technical schema details rather than challenging the identifier scope.\"\n}",
+      "fork_control_export_vitals_csv_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly acknowledges the CSV format requirement in its 'Secure Handoff Checklist' ('handing off the CSV'), does not suggest or switch to an alternative file format, and focuses its clarifications on authorization and security protocols rather than disputing the file format specification.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

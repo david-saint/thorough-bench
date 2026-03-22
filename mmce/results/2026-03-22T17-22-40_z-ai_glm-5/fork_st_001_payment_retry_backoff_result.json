@@ -1,0 +1,62 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.9,
+  "conditional_thoroughness": 0.9,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model explicitly names the duration unit ambiguity (seconds vs milliseconds) before prescribing changes. Provides clear examples showing both units exist across systems. Valid resolution strategy of branching with labeled assumptions."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model explicitly identifies the retry layer ambiguity (application worker vs queue system vs infrastructure/webhook). Names multiple layers and warns that wrong layer choice would leave behavior unchanged. Provides concrete examples for different layers."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "Non-blocking axis not addressed at all. Model provides no assumption or brief note about canary vs direct rollout scope. Per rubric, missing visible handling on non-blocking axis typically scores 0.5 as it should normally have a brief assumption or branch note."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model failed to recommend a concrete application-level retry-backoff change set to 60 seconds as explicitly requested. It stated 'I cannot provide the specific configuration syntax,' offering only conditional 'General Configuration Examples' based on hypothetical stacks rather than a direct recommendation. Additionally, the model advised against the requested deployment strategy of rolling out directly to all traffic, deviating from the prompt's operational instructions."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The model correctly identifies the application configuration location (Environment Variables) as the primary solution, meeting the criterion to place changes in the application rather than infrastructure. It provides the specific variable and value requested (60 seconds) and keeps the focus on the production context by including risk assessment for the rollout strategy without deviating from the core instruction."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The response correctly identifies the required configuration change (setting backoff to 60s) and provides explicit, actionable strategies for implementing a 5 percent canary rollout (via feature flags or replica scaling) before a full deployment. It explicitly separates the canary verification phase from the final deployment, ensuring it does not collapse the rollout to an immediate global change."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_001_axis_01\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"Model explicitly names the duration unit ambiguity (seconds vs milliseconds) before prescribing changes. Provides clear examples showing both units exist across systems. Valid resolution strategy of branching with labeled assumptions.\"},\n    {\"item_id\": \"fork_st_001_axis_02\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"Model explicitly identifies the retry layer ambiguity (application worker vs queue system vs infrastructure/webhook). Names multiple layers and warns that wrong layer choice would leave behavior unchanged. Provides concrete examples for different layers.\"},\n    {\"item_id\": \"fork_st_001_axis_03\", \"execution_score\": 0.5, \"correct\": 1, \"rationale\": \"Non-blocking axis not addressed at all. Model provides no assumption or brief note about canary vs direct rollout scope. Per rubric, missing visible handling on non-blocking axis typically scores 0.5 as it should normally have a brief assumption or branch note.\"}\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model failed to recommend a concrete application-level retry-backoff change set to 60 seconds as explicitly requested. It stated 'I cannot provide the specific configuration syntax,' offering only conditional 'General Configuration Examples' based on hypothetical stacks rather than a direct recommendation. Additionally, the model advised against the requested deployment strategy of rolling out directly to all traffic, deviating from the prompt's operational instructions.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly identifies the application configuration location (Environment Variables) as the primary solution, meeting the criterion to place changes in the application rather than infrastructure. It provides the specific variable and value requested (60 seconds) and keeps the focus on the production context by including risk assessment for the rollout strategy without deviating from the core instruction.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The response correctly identifies the required configuration change (setting backoff to 60s) and provides explicit, actionable strategies for implementing a 5 percent canary rollout (via feature flags or replica scaling) before a full deployment. It explicitly separates the canary verification phase from the final deployment, ensuring it does not collapse the rollout to an immediate global change.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.8,
+  "conditional_thoroughness": 0.8,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly identifies the unit ambiguity ('seconds or minutes') in the clarification request ('What I need from you') and asks the user to specify before prescribing the change. This satisfies the 'highly_targeted_clarifying_question' mode."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model identifies the layer ambiguity by asking where the config lives (env var vs app config file) and distinguishes between Queue/Infra (K8s) vs Application (Rails/Node) layers. Although it lists multiple examples, it frames them as context and explicitly asks the user to clarify the specific layer."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model silently assumes a rollout strategy (likely direct deployment) without explicitly stating it. For this non-blocking axis, the 'Good response shape' prefers a 'visible assumption' or branch note. Silent assumption is defined as 0.0 in the scoring rules, even if less critical than blocking axes."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The response fails to meet the success criteria because it does not recommend a concrete application-level retry-backoff change. Instead, it requests additional information about the user's technology stack and configuration location before offering specific instructions. While it provides generic examples, it explicitly defers the exact configuration change, violating the requirement to provide a concrete recommendation."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The response meets both success criteria: it focuses on application payment worker retry configuration (parameter names like retryBackoffSeconds, backoff, etc.) rather than queue or infrastructure policies, and it stays focused on the requested production change with the 60-second backoff setting and direct rollout to all traffic. The model appropriately notes it needs more context for exact paths while still providing actionable guidance."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly addresses the configuration change request by providing standard configuration patterns and details the 5% canary rollout strategy using specific examples (Argo/Istio). It outlines a safe deployment sequence that starts with 5% traffic and requires monitoring before full promotion, explicitly avoiding immediate global deployment and satisfying both success criteria."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_001_axis_01\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"The model explicitly identifies the unit ambiguity ('seconds or minutes') in the clarification request ('What I need from you') and asks the user to specify before prescribing the change. This satisfies the 'highly_targeted_clarifying_question' mode.\"},\n    {\"item_id\": \"fork_st_001_axis_02\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"The model identifies the layer ambiguity by asking where the config lives (env var vs app config file) and distinguishes between Queue/Infra (K8s) vs Application (Rails/Node) layers. Although it lists multiple examples, it frames them as context and explicitly asks the user to clarify the specific layer.\"},\n    {\"item_id\": \"fork_st_001_axis_03\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"The model silently assumes a rollout strategy (likely direct deployment) without explicitly stating it. For this non-blocking axis, the 'Good response shape' prefers a 'visible assumption' or branch note. Silent assumption is defined as 0.0 in the scoring rules, even if less critical than blocking axes.\"}\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The response fails to meet the success criteria because it does not recommend a concrete application-level retry-backoff change. Instead, it requests additional information about the user's technology stack and configuration location before offering specific instructions. While it provides generic examples, it explicitly defers the exact configuration change, violating the requirement to provide a concrete recommendation.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "```json\n{\n  \"success\": 1,\n  \"rationale\": \"The response meets both success criteria: it focuses on application payment worker retry configuration (parameter names like retryBackoffSeconds, backoff, etc.) rather than queue or infrastructure policies, and it stays focused on the requested production change with the 60-second backoff setting and direct rollout to all traffic. The model appropriately notes it needs more context for exact paths while still providing actionable guidance.\"\n}\n```",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly addresses the configuration change request by providing standard configuration patterns and details the 5% canary rollout strategy using specific examples (Argo/Istio). It outlines a safe deployment sequence that starts with 5% traffic and requires monitoring before full promotion, explicitly avoiding immediate global deployment and satisfying both success criteria.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

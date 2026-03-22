@@ -1,0 +1,73 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.1,
+  "conditional_thoroughness": 0.1,
+  "noise_index": 0.27999999999999997,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "The model mentions the unit ambiguity only in passing with examples (showing backoff: 60 or PAYMENT_RETRY_BACKOFF=60) but does not ask a targeted clarification question specifically about seconds vs milliseconds. A bundled general clarification ('What system/application...') doesn't satisfy the axis requirement that the unit ambiguity be explicitly fronted with a resolution strategy. The unit is the critical blocking ambiguity here and should have been the primary focus."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "The model asks about 'What system/application manages payment retries?' which identifies generic system boundaries but does not explicitly name the application-layer vs infrastructure/queue-layer distinction as the critical blocking ambiguity it is. The axis requires the response must name the missing boundary explicitly. A generic list of system components is insufficient per the wastefulness boundary."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "The model mentions deployment process in a general warning ('verify the exact parameter name and deployment process with your team') but does not make a visible assumption about rollout scope (direct vs canary). Since this axis is non-blocking, a visible assumption or brief branch note was acceptable. The mention of peak traffic risk is proportional but not a clear visible assumption, scoring 0.5 appropriately."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 1,
+        "rationale": "The model explicitly provides a concrete configuration change setting payment.retry.backoff_seconds to 60 within the application-level config file (config/production.yml). It adheres to the requested time unit (seconds) and keeps the change at the application configuration layer, satisfying both success criteria. While it advises against the risky rollout strategy, it also provides the specific config needed for immediate 100% traffic deployment if the user chooses that path."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The model correctly places the change within the application's retry configuration (payment_worker section) rather than queue or infrastructure policies. It maintains focus on the requested production configuration and direct rollout strategy, providing a concrete example while appropriately noting infrastructure variables."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model response meets both success criteria: (1) It recommends the requested 60-second payment retry backoff configuration change for production, including specific YAML examples. (2) It explicitly implements an explicit 5% canary rollout (Phase 1 - setWeight: 5) with a separate full deployment phase (Phase 2) that only occurs after canary validation, avoiding silent collapse to global deployment. The response also includes appropriate validation metrics, rollback procedures, and timeline."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Asks broad multi-part clarification questions about system, config location, and parameter name when the critical ambiguities (unit, retry layer) should have been identified and addressed more directly",
+        "noise_class": "unnecessary_clarification",
+        "weight": 0.8
+      },
+      {
+        "description": "Generic release advice warnings (testing, deployment process, team verification) dominate the response without first resolving the specific blocking ambiguities",
+        "noise_class": "performative_hedging",
+        "weight": 0.6
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 0.5,\n      \"correct\": 0,\n      \"rationale\": \"The model mentions the unit ambiguity only in passing with examples (showing backoff: 60 or PAYMENT_RETRY_BACKOFF=60) but does not ask a targeted clarification question specifically about seconds vs milliseconds. A bundled general clarification ('What system/application...') doesn't satisfy the axis requirement that the unit ambiguity be explicitly fronted with a resolution strategy. The unit is the critical blocking ambiguity here and should have been the primary focus.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 0.5,\n      \"correct\": 0,\n      \"rationale\": \"The model asks about 'What system/application manages payment retries?' which identifies generic system boundaries but does not explicitly name the application-layer vs infrastructure/queue-layer distinction as the critical blocking ambiguity it is. The axis requires the response must name the missing boundary explicitly. A generic list of system components is insufficient per the wastefulness boundary.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"The model mentions deployment process in a general warning ('verify the exact parameter name and deployment process with your team') but does not make a visible assumption about rollout scope (direct vs canary). Since this axis is non-blocking, a visible assumption or brief branch note was acceptable. The mention of peak traffic risk is proportional but not a clear visible assumption, scoring 0.5 appropriately.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Asks broad multi-part clarification questions about system, config location, and parameter name when the critical ambiguities (unit, retry layer) should have been identified and addressed more directly\",\n      \"noise_class\": \"unnecessary_clarification\",\n      \"weight\": 0.8\n    },\n    {\n      \"description\": \"Generic release advice warnings (testing, deployment process, team verification) dominate the response without first resolving the specific blocking ambiguities\",\n      \"noise_class\": \"performative_hedging\",\n      \"weight\": 0.6\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly provides a concrete configuration change setting payment.retry.backoff_seconds to 60 within the application-level config file (config/production.yml). It adheres to the requested time unit (seconds) and keeps the change at the application configuration layer, satisfying both success criteria. While it advises against the risky rollout strategy, it also provides the specific config needed for immediate 100% traffic deployment if the user chooses that path.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly places the change within the application's retry configuration (payment_worker section) rather than queue or infrastructure policies. It maintains focus on the requested production configuration and direct rollout strategy, providing a concrete example while appropriately noting infrastructure variables.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets both success criteria: (1) It recommends the requested 60-second payment retry backoff configuration change for production, including specific YAML examples. (2) It explicitly implements an explicit 5% canary rollout (Phase 1 - setWeight: 5) with a separate full deployment phase (Phase 2) that only occurs after canary validation, avoiding silent collapse to global deployment. The response also includes appropriate validation metrics, rollback procedures, and timeline.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

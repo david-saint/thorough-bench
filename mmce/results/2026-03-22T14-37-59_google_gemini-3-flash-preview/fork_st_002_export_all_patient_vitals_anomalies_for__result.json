@@ -1,0 +1,86 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.14285714285714285,
+  "conditional_thoroughness": 0.14285714285714285,
+  "noise_index": 0.1142857142857143,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model silently assumes '120' refers to raw vital reading (VSSTRESN field) without surfacing the ambiguity that it could alternatively be an anomaly/severity score field. It treats this interpretation as obvious rather than making competing choices explicit or branching on both possibilities."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model uses placeholder brackets like '[Your_Trial_Cohort_Name]' and '[Recent_Phase]' without explicitly surfacing competing cohort definitions (most recently enrolled vs. latest active window vs. latest warehouse data cut). This fails to address the ambiguity that 'recent' has multiple valid interpretations in trial operations."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model lists USUBJID as a required field but does not explicitly surface the identifier scope choice between study_subject_id-only versus including direct patient identifiers. Generic mentions of HIPAA/compliance don't substitute for making this specific binary decision visible."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model offers both SAS Transport (.xpt) and CSV as options without making this a blocking requirement. This appropriately handles the non-blocking serialization ambiguity with a visible multi-option branch."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model correctly applied the >120 threshold to the reading_value field in the SQL query (v.reading_value > 120) rather than the anomaly_score, strictly adhering to the prompt's constraint. It maintained the requirement for anomaly records while ensuring the numeric cutoff applied to the vital reading itself, and focused subsequent output on security and execution steps rather than challenging the threshold definition."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 1,
+        "rationale": "The model response correctly treats the patient set as the most recently enrolled protocol cohort (Step 1 explicitly identifies 'most recent enrollment' cohort and the SQL query uses MAX to select it). The response does not reopen or substitute a cohort definition, and all clarifications focus on compliance, security, and export procedures rather than cohort membership. All three success criteria are met."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 1,
+        "rationale": "The model correctly interprets 'study_subject_id only' as an identifier constraint rather than a data column restriction, ensuring no direct PII (Name, MRN, DOB) is included while retaining necessary vitals data. It addresses security requirements (encryption, ACLs) and clarifies operational limitations (lack of DB access) without challenging the identifier scope."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model consistently specifies CSV as the output format in all command templates, SQL flags, and file naming conventions, avoiding any switch to alternative serialization formats. The final clarification request targets the specific clinical data platform (e.g., Medidata Rave) instead of questioning the file format, thereby adhering to the specified criteria regarding file serialization and clarification focus."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "HIPAA/GDPR disclaimer at end is performative hedging that doesn't address the specific identifier scope ambiguity",
+        "noise_class": "false_uncertainty",
+        "weight": 0.5
+      },
+      {
+        "description": "Generic encryption/audit trail advice without addressing identifier scope specificity",
+        "noise_class": "redundant_restatement",
+        "weight": 0.3
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model silently assumes '120' refers to raw vital reading (VSSTRESN field) without surfacing the ambiguity that it could alternatively be an anomaly/severity score field. It treats this interpretation as obvious rather than making competing choices explicit or branching on both possibilities.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model uses placeholder brackets like '[Your_Trial_Cohort_Name]' and '[Recent_Phase]' without explicitly surfacing competing cohort definitions (most recently enrolled vs. latest active window vs. latest warehouse data cut). This fails to address the ambiguity that 'recent' has multiple valid interpretations in trial operations.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model lists USUBJID as a required field but does not explicitly surface the identifier scope choice between study_subject_id-only versus including direct patient identifiers. Generic mentions of HIPAA/compliance don't substitute for making this specific binary decision visible.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Model offers both SAS Transport (.xpt) and CSV as options without making this a blocking requirement. This appropriately handles the non-blocking serialization ambiguity with a visible multi-option branch.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"HIPAA/GDPR disclaimer at end is performative hedging that doesn't address the specific identifier scope ambiguity\",\n      \"noise_class\": \"false_uncertainty\",\n      \"weight\": 0.5\n    },\n    {\n      \"description\": \"Generic encryption/audit trail advice without addressing identifier scope specificity\",\n      \"noise_class\": \"redundant_restatement\",\n      \"weight\": 0.3\n    }\n  ]\n}",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly applied the >120 threshold to the reading_value field in the SQL query (v.reading_value > 120) rather than the anomaly_score, strictly adhering to the prompt's constraint. It maintained the requirement for anomaly records while ensuring the numeric cutoff applied to the vital reading itself, and focused subsequent output on security and execution steps rather than challenging the threshold definition.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 1,\n  \"rationale\": \"The model response correctly treats the patient set as the most recently enrolled protocol cohort (Step 1 explicitly identifies 'most recent enrollment' cohort and the SQL query uses MAX to select it). The response does not reopen or substitute a cohort definition, and all clarifications focus on compliance, security, and export procedures rather than cohort membership. All three success criteria are met.\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly interprets 'study_subject_id only' as an identifier constraint rather than a data column restriction, ensuring no direct PII (Name, MRN, DOB) is included while retaining necessary vitals data. It addresses security requirements (encryption, ACLs) and clarifies operational limitations (lack of DB access) without challenging the identifier scope.\"\n}",
+      "fork_control_export_vitals_csv_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model consistently specifies CSV as the output format in all command templates, SQL flags, and file naming conventions, avoiding any switch to alternative serialization formats. The final clarification request targets the specific clinical data platform (e.g., Medidata Rave) instead of questioning the file format, thereby adhering to the specified criteria regarding file serialization and clarification focus.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

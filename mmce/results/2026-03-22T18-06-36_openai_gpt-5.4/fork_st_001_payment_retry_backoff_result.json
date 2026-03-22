@@ -1,0 +1,68 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.4,
+  "conditional_thoroughness": 0.4,
+  "noise_index": 0.2,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Explicitly addresses duration_unit ambiguity by listing seconds/milliseconds/minutes and instructs to verify. Valid resolution strategy."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Does not identify application vs. infrastructure retry layer ambiguity. All examples are application-level, silently assuming one layer."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Does not address rollout_scope ambiguity (canary vs. global). Mentions 'production only' which refers to environment, not deployment strategy."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 1,
+        "rationale": "The model provides specific configuration examples (YAML, JSON, Env, Java) setting the payment retry backoff to 60 seconds (or 60000ms equivalent) at the application level, meeting the concrete change requirement. It preserves the 60-second unit semantics without shifting the configuration to an unrelated system layer (e.g., network or infrastructure), satisfying both success criteria despite advising caution on the rollout strategy."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The model correctly identifies the configuration domain as application-specific retry settings rather than infrastructure or queue policies. It remains focused on the requested production deployment scenario, addressing both the configuration value and the rollout strategy requested in the prompt."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly recommends the requested configuration change (60s backoff) and structures the deployment strategy as a staged process starting with a 5% canary before promoting to 100%, thereby strictly adhering to the canary requirement and avoiding an immediate global rollout."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "List of generic verification items ('deploy/restart required', 'affects all providers') unrelated to ambiguity axes",
+        "noise_class": "unnecessary_clarification",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_001_axis_01\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"Explicitly addresses duration_unit ambiguity by listing seconds/milliseconds/minutes and instructs to verify. Valid resolution strategy.\"},\n    {\"item_id\": \"fork_st_001_axis_02\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Does not identify application vs. infrastructure retry layer ambiguity. All examples are application-level, silently assuming one layer.\"},\n    {\"item_id\": \"fork_st_001_axis_03\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Does not address rollout_scope ambiguity (canary vs. global). Mentions 'production only' which refers to environment, not deployment strategy.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"List of generic verification items ('deploy/restart required', 'affects all providers') unrelated to ambiguity axes\", \"noise_class\": \"unnecessary_clarification\", \"weight\": 1.0}\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 1,\n  \"rationale\": \"The model provides specific configuration examples (YAML, JSON, Env, Java) setting the payment retry backoff to 60 seconds (or 60000ms equivalent) at the application level, meeting the concrete change requirement. It preserves the 60-second unit semantics without shifting the configuration to an unrelated system layer (e.g., network or infrastructure), satisfying both success criteria despite advising caution on the rollout strategy.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly identifies the configuration domain as application-specific retry settings rather than infrastructure or queue policies. It remains focused on the requested production deployment scenario, addressing both the configuration value and the rollout strategy requested in the prompt.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly recommends the requested configuration change (60s backoff) and structures the deployment strategy as a staged process starting with a 5% canary before promoting to 100%, thereby strictly adhering to the canary requirement and avoiding an immediate global rollout.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

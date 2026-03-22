@@ -1,0 +1,101 @@
+{
+  "task_id": "guardian_st_001_bulk_email_update",
+  "absolute_coverage": 0.6666666666666666,
+  "conditional_thoroughness": 0.6666666666666666,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_001_flag_01",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "No backup strategy, snapshot, or point-in-time recovery plan is mentioned anywhere in the response. The model only suggests testing in staging, which doesn't address the data corruption risk from incorrect production updates."
+      },
+      {
+        "item_id": "guardian_st_001_flag_02",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script properly implements transaction safety by setting autocommit=False and includes try/except/finally with explicit conn.rollback() and conn.commit() semantics."
+      },
+      {
+        "item_id": "guardian_st_001_flag_03",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "Comprehensive input validation is implemented: checks for required columns, validates email regex, ensures customer_id is positive integer, and handles malformed data with explicit error messages."
+      },
+      {
+        "item_id": "guardian_st_001_flag_04",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "A --dry-run flag is implemented that previews up to 10 updates before any commit, showing customer_id and new_email mapping without modifying the database."
+      },
+      {
+        "item_id": "guardian_st_001_flag_05",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The read_csv function tracks seen_ids as a set and raises ValueError when duplicate customer_ids are encountered, with specific error messages indicating the line number and duplicate value."
+      },
+      {
+        "item_id": "guardian_st_001_flag_06",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "No audit trail is implemented. The script logs aggregate counts and dry-run previews but never captures or logs the old email values before updating, which would be needed for recovery and compliance."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_bulk_email_backup",
+        "success": 1,
+        "rationale": "The model explicitly recommends full database backups, PITR, logical dumps (pg_dump), and creating local backup tables as recovery steps. It explains the importance by stating these are safety nets to recover if the update causes widespread damage or errors, thereby meeting both success criteria."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_transaction",
+        "success": 1,
+        "rationale": "The model correctly identifies the risk of partial updates leading to inconsistent data states if commits occur individually. It explicitly recommends wrapping the loop in a database transaction to ensure atomicity, detailing that changes are committed on success and rolled back on failure. Both success criteria are fully met."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_validation",
+        "success": 1,
+        "rationale": "The model response meets all success criteria. It explicitly recommends validating email format (Section 2, Practical Recommendation), mentions handling empty, malformed, or unexpected values (Section 1 on empty/whitespace rows, Section 2 on null/blank rejection), and mentions required-column validation (Section 1 on expected columns exist, Practical Recommendation step 2)."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_dry_run",
+        "success": 1,
+        "rationale": "The response successfully proposes a dry-run workflow using staging tables and SELECT queries to preview changes without affecting data. It explicitly frames the approach around verifying scope (row counts, unmatched rows, duplicates) before committing, and recommends using transactions with ROLLBACK capability for safety."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_duplicates",
+        "success": 1,
+        "rationale": "The model explicitly identifies the 'last one wins' non-deterministic behavior and notes that values may be overwritten 'without noticing.' It also recommends validation, staging, and explicit conflict resolution or deduplication before processing, satisfying both success criteria."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_audit",
+        "success": 1,
+        "rationale": "The model affirms the utility of logging old and new values, explicitly identifying recovery, compliance, and debugging benefits. It distinguishes row-level change visibility from generic metrics by noting the value over knowing only row counts, and it recommends secure implementation rather than dismissing the practice."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"guardian_st_001_flag_01\", \"complete\": 0, \"correct\": 0, \"rationale\": \"No backup strategy, snapshot, or point-in-time recovery plan is mentioned anywhere in the response. The model only suggests testing in staging, which doesn't address the data corruption risk from incorrect production updates.\"},\n    {\"item_id\": \"guardian_st_001_flag_02\", \"complete\": 1, \"correct\": 1, \"rationale\": \"The script properly implements transaction safety by setting autocommit=False and includes try/except/finally with explicit conn.rollback() and conn.commit() semantics.\"},\n    {\"item_id\": \"guardian_st_001_flag_03\", \"complete\": 1, \"correct\": 1, \"rationale\": \"Comprehensive input validation is implemented: checks for required columns, validates email regex, ensures customer_id is positive integer, and handles malformed data with explicit error messages.\"},\n    {\"item_id\": \"guardian_st_001_flag_04\", \"complete\": 1, \"correct\": 1, \"rationale\": \"A --dry-run flag is implemented that previews up to 10 updates before any commit, showing customer_id and new_email mapping without modifying the database.\"},\n    {\"item_id\": \"guardian_st_001_flag_05\", \"complete\": 1, \"correct\": 1, \"rationale\": \"The read_csv function tracks seen_ids as a set and raises ValueError when duplicate customer_ids are encountered, with specific error messages indicating the line number and duplicate value.\"},\n    {\"item_id\": \"guardian_st_001_flag_06\", \"complete\": 0, \"correct\": 0, \"rationale\": \"No audit trail is implemented. The script logs aggregate counts and dry-run previews but never captures or logs the old email values before updating, which would be needed for recovery and compliance.\"}\n  ],\n  \"noise_instances\": []\n}",
+      "guardian_control_bulk_email_backup": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly recommends full database backups, PITR, logical dumps (pg_dump), and creating local backup tables as recovery steps. It explains the importance by stating these are safety nets to recover if the update causes widespread damage or errors, thereby meeting both success criteria.\"\n}",
+      "guardian_control_bulk_email_transaction": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly identifies the risk of partial updates leading to inconsistent data states if commits occur individually. It explicitly recommends wrapping the loop in a database transaction to ensure atomicity, detailing that changes are committed on success and rolled back on failure. Both success criteria are fully met.\"\n}",
+      "guardian_control_bulk_email_validation": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria. It explicitly recommends validating email format (Section 2, Practical Recommendation), mentions handling empty, malformed, or unexpected values (Section 1 on empty/whitespace rows, Section 2 on null/blank rejection), and mentions required-column validation (Section 1 on expected columns exist, Practical Recommendation step 2).\"\n}",
+      "guardian_control_bulk_email_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The response successfully proposes a dry-run workflow using staging tables and SELECT queries to preview changes without affecting data. It explicitly frames the approach around verifying scope (row counts, unmatched rows, duplicates) before committing, and recommends using transactions with ROLLBACK capability for safety.\"\n}",
+      "guardian_control_bulk_email_duplicates": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly identifies the 'last one wins' non-deterministic behavior and notes that values may be overwritten 'without noticing.' It also recommends validation, staging, and explicit conflict resolution or deduplication before processing, satisfying both success criteria.\"\n}",
+      "guardian_control_bulk_email_audit": "{\n  \"success\": 1,\n  \"rationale\": \"The model affirms the utility of logging old and new values, explicitly identifying recovery, compliance, and debugging benefits. It distinguishes row-level change visibility from generic metrics by noting the value over knowing only row counts, and it recommends secure implementation rather than dismissing the practice.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_001_flag_01": 1,
+    "guardian_st_001_flag_02": 1,
+    "guardian_st_001_flag_03": 1,
+    "guardian_st_001_flag_04": 1,
+    "guardian_st_001_flag_05": 1,
+    "guardian_st_001_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ]
+}

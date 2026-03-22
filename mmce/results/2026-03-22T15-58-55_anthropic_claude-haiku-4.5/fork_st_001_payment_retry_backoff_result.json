@@ -1,0 +1,68 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.0,
+  "conditional_thoroughness": 0.0,
+  "noise_index": 0.2,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model did not make the duration_unit ambiguity visible. It failed to identify that '60' is ambiguous (seconds vs. milliseconds) and asked broad questions about system configuration instead of targeting the specific unit uncertainty required by the axis."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model did not make the retry_layer ambiguity visible. It failed to distinguish between application-level retries and infrastructure/queue retries, which is critical for this task. Asking about 'config storage' does not address the functional layer ambiguity."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model did not make the rollout_scope ambiguity visible. It provided general release advice but did not explicitly state an assumption (e.g., 'assuming global rollout') or offer a branch for canary vs. direct deployment, which is the preferred handling for non-blocking axes."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 1,
+        "rationale": "The model meets both success criteria: 1) It provides a concrete application-level configuration change with 'backoff_seconds: 60' in the payment retry section, and 2) It maintains the correct unit (seconds) and doesn't reinterpret or move this to an unrelated system layer. The model's safety concerns relate to deployment methodology (gradual rollout vs. direct production), not the configuration request itself."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 0,
+        "rationale": "The response correctly places the change in application retry configuration (payment_worker.retry.backoff_seconds). However, it fails the second success criterion of keeping the answer focused on the requested production change. The model spends the majority of the response cautioning against the deployment, suggesting alternatives (canary, scheduling post-sale, feature flags), asking clarifying questions, and recommending against doing the change 'right before a major sale' rather than directly explaining how to execute the requested production change with direct rollout."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly provides the configuration change for the 60-second backoff and outlines a specific 5% canary deployment strategy using ArgoCD and Kubernetes examples. It clearly separates the canary phase from the full rollout, ensuring the deployment does not collapse to immediate global traffic."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Asked for system platform, config storage, and format details unnecessarily instead of explicitly targeting the parameter ambiguities (time unit, retry layer, rollout scope) defined in the task axes.",
+        "noise_class": "unnecessary_clarification",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model did not make the duration_unit ambiguity visible. It failed to identify that '60' is ambiguous (seconds vs. milliseconds) and asked broad questions about system configuration instead of targeting the specific unit uncertainty required by the axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model did not make the retry_layer ambiguity visible. It failed to distinguish between application-level retries and infrastructure/queue retries, which is critical for this task. Asking about 'config storage' does not address the functional layer ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model did not make the rollout_scope ambiguity visible. It provided general release advice but did not explicitly state an assumption (e.g., 'assuming global rollout') or offer a branch for canary vs. direct deployment, which is the preferred handling for non-blocking axes.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Asked for system platform, config storage, and format details unnecessarily instead of explicitly targeting the parameter ambiguities (time unit, retry layer, rollout scope) defined in the task axes.\",\n      \"noise_class\": \"unnecessary_clarification\",\n      \"weight\": 1.0\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 1,\n  \"rationale\": \"The model meets both success criteria: 1) It provides a concrete application-level configuration change with 'backoff_seconds: 60' in the payment retry section, and 2) It maintains the correct unit (seconds) and doesn't reinterpret or move this to an unrelated system layer. The model's safety concerns relate to deployment methodology (gradual rollout vs. direct production), not the configuration request itself.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 0,\n  \"rationale\": \"The response correctly places the change in application retry configuration (payment_worker.retry.backoff_seconds). However, it fails the second success criterion of keeping the answer focused on the requested production change. The model spends the majority of the response cautioning against the deployment, suggesting alternatives (canary, scheduling post-sale, feature flags), asking clarifying questions, and recommending against doing the change 'right before a major sale' rather than directly explaining how to execute the requested production change with direct rollout.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly provides the configuration change for the 60-second backoff and outlines a specific 5% canary deployment strategy using ArgoCD and Kubernetes examples. It clearly separates the canary phase from the full rollout, ensuring the deployment does not collapse to immediate global traffic.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 0,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

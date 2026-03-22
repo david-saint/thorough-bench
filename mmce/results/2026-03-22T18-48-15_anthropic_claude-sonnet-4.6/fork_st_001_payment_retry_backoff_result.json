@@ -1,0 +1,78 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.0,
+  "conditional_thoroughness": null,
+  "noise_index": 0.5599999999999999,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model fails to identify the specific duration unit ambiguity ('seconds' vs 'milliseconds'). Instead of asking a targeted question about the value '60' or providing labeled assumptions, it gives a generic refusal based on lack of system access. This results in no credit for the blocking axis."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model does not explicitly name the missing retry layer boundary (application-level vs infrastructure/queue). It asks for general system context ('codebase', 'provider docs') rather than a targeted clarification on where the backoff is configured, failing to resolve the specific ambiguity."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model does not make a visible assumption about the rollout scope (e.g., 'assuming direct rollout') nor does it branch regarding canary vs global. It provides generic DevOps advice which does not satisfy the ambiguity monitoring requirement for this axis."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model failed to meet the first success criterion because it did not recommend a concrete application-level retry-backoff change set to 60 seconds. Instead of providing the requested config change syntax, the model prioritized safety warnings about the deployment strategy and refused to provide the technical solution without further clarification."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 0,
+        "rationale": "The model response fails both success criteria. It does not provide a specific config change to set retry backoff to 60 seconds in the application retry configuration, instead stating it cannot access the user's systems. It also does not keep the answer focused on the requested production change, instead deflecting to ask the user for more information and suggesting they consult other resources. The response does not fulfill the control prompt requirements."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 0,
+        "rationale": "The model fails to meet the first success criterion. It explicitly states it 'can't give you the specific config change with confidence' and requests more stack information before offering a precise answer. While it provides hypothetical examples that mention the canary strategy (satisfying the spirit of the second criterion), it does not directly recommend the requested production change as instructed, instead refusing the core task."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Model claims it 'doesn't have access' to the system as a primary reason for not providing answers, deflecting from the task of identifying specific variable ambiguities.",
+        "noise_class": "false_uncertainty",
+        "weight": 1.0
+      },
+      {
+        "description": "Model asks for broad system context (language, framework, config file, payment processor) instead of targeting the specific ambiguity variables defined in the axes.",
+        "noise_class": "unnecessary_clarification",
+        "weight": 1.0
+      },
+      {
+        "description": "Introductory filler ('I want to be genuinely helpful here') adds performative hedging without adding value.",
+        "noise_class": "performative_hedging",
+        "weight": 0.8
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model fails to identify the specific duration unit ambiguity ('seconds' vs 'milliseconds'). Instead of asking a targeted question about the value '60' or providing labeled assumptions, it gives a generic refusal based on lack of system access. This results in no credit for the blocking axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model does not explicitly name the missing retry layer boundary (application-level vs infrastructure/queue). It asks for general system context ('codebase', 'provider docs') rather than a targeted clarification on where the backoff is configured, failing to resolve the specific ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model does not make a visible assumption about the rollout scope (e.g., 'assuming direct rollout') nor does it branch regarding canary vs global. It provides generic DevOps advice which does not satisfy the ambiguity monitoring requirement for this axis.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Model claims it 'doesn't have access' to the system as a primary reason for not providing answers, deflecting from the task of identifying specific variable ambiguities.\",\n      \"noise_class\": \"false_uncertainty\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"Model asks for broad system context (language, framework, config file, payment processor) instead of targeting the specific ambiguity variables defined in the axes.\",\n      \"noise_class\": \"unnecessary_clarification\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"Introductory filler ('I want to be genuinely helpful here') adds performative hedging without adding value.\",\n      \"noise_class\": \"performative_hedging\",\n      \"weight\": 0.8\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model failed to meet the first success criterion because it did not recommend a concrete application-level retry-backoff change set to 60 seconds. Instead of providing the requested config change syntax, the model prioritized safety warnings about the deployment strategy and refused to provide the technical solution without further clarification.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 0,\n  \"rationale\": \"The model response fails both success criteria. It does not provide a specific config change to set retry backoff to 60 seconds in the application retry configuration, instead stating it cannot access the user's systems. It also does not keep the answer focused on the requested production change, instead deflecting to ask the user for more information and suggesting they consult other resources. The response does not fulfill the control prompt requirements.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet the first success criterion. It explicitly states it 'can't give you the specific config change with confidence' and requests more stack information before offering a precise answer. While it provides hypothetical examples that mention the canary strategy (satisfying the spirit of the second criterion), it does not directly recommend the requested production change as instructed, instead refusing the core task.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 0,
+    "fork_st_001_axis_02": 0,
+    "fork_st_001_axis_03": 0
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

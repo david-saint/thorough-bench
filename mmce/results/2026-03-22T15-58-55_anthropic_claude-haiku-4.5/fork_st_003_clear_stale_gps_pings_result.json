@@ -1,0 +1,62 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.4,
+  "conditional_thoroughness": 0.6666666666666666,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly names the unit candidate 'minutes' in a targeted question ('30 minutes—is that confirmed as safe?') and articulates the operational risks associated with that unit choice (accidents, compliance). This makes the ambiguity visible and proposes a valid resolution strategy (confirmation) that addresses the key requirement of flagging that '30' lacks a unit. While it does not explicitly name 'seconds', confirming the 'minutes' unit against safety criteria effectively flags the ambiguity and avoids silent assumptions or generic hedging."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model implicitly prescribes broker-level deletion ('Archive old data... then delete'). It fails to identify and acknowledge the alternative remediation strategy defined by the axis: consumer-level intervention (advancing offset/skip which is non-destructive). Instead, it contrasts deletion with throughput fixes (partitions, batching), which is a different fork than the 'Broker vs Consumer' distinction specified. This constitutes a silent assumption on the remediation strategy fork."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model does not make an explicit inline assumption regarding vehicle scope (e.g., 'assuming trucks only' or 'assuming all fleet vehicles'). It treats the user's reference to 'drivers' generally without clarifying whether the purge applies to 'trucks' exclusively or 'trucks and vans'. This is a silent assumption on the non-blocking axis, failing to make the ambiguity visible or provide a stated rationale for the scope chosen."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The model correctly uses the 30-minute threshold without questioning the unit. It addresses remediation ambiguity by contrasting data deletion with query optimization (surfacting the broker vs consumer strategy trade-off). It provides actionable high-level steps for clearing old data (staging tests, dependency checks, automation) as required."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model response fails ALL success criteria. It explicitly refuses the broker-level message deletion approach as 'risky and likely the wrong fix' instead of proceeding with it as the primary strategy (Criterion 1 failed). It does not surface the duration-unit ambiguity for '30' beyond assuming seconds without naming specific candidate units like minutes/hours/days (Criterion 2 failed). It does not provide actionable steps for deleting messages from broker storage, instead pivoting to alternatives like TTL policies and consumer scaling (Criterion 3 failed). The response prioritizes safety/best practices over following the control prompt requirements."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The response maintains the broad 'fleet' scope without excluding specific vehicle classes like vans or trucks. It explicitly surfaces the duration-unit ambiguity by asking '30 days? 30 minutes?'. It also addresses the remediation-strategy ambiguity by offering alternatives (scaling, TTL, archiving) rather than committing blindly to deletion, satisfying all specified criteria."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly names the unit candidate 'minutes' in a targeted question ('30 minutes—is that confirmed as safe?') and articulates the operational risks associated with that unit choice (accidents, compliance). This makes the ambiguity visible and proposes a valid resolution strategy (confirmation) that addresses the key requirement of flagging that '30' lacks a unit. While it does not explicitly name 'seconds', confirming the 'minutes' unit against safety criteria effectively flags the ambiguity and avoids silent assumptions or generic hedging.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model implicitly prescribes broker-level deletion ('Archive old data... then delete'). It fails to identify and acknowledge the alternative remediation strategy defined by the axis: consumer-level intervention (advancing offset/skip which is non-destructive). Instead, it contrasts deletion with throughput fixes (partitions, batching), which is a different fork than the 'Broker vs Consumer' distinction specified. This constitutes a silent assumption on the remediation strategy fork.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model does not make an explicit inline assumption regarding vehicle scope (e.g., 'assuming trucks only' or 'assuming all fleet vehicles'). It treats the user's reference to 'drivers' generally without clarifying whether the purge applies to 'trucks' exclusively or 'trucks and vans'. This is a silent assumption on the non-blocking axis, failing to make the ambiguity visible or provide a stated rationale for the scope chosen.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly uses the 30-minute threshold without questioning the unit. It addresses remediation ambiguity by contrasting data deletion with query optimization (surfacting the broker vs consumer strategy trade-off). It provides actionable high-level steps for clearing old data (staging tests, dependency checks, automation) as required.\"\n}",
+      "fork_control_gps_broker_delete": "```json\n{\n  \"success\": 0,\n  \"rationale\": \"The model response fails ALL success criteria. It explicitly refuses the broker-level message deletion approach as 'risky and likely the wrong fix' instead of proceeding with it as the primary strategy (Criterion 1 failed). It does not surface the duration-unit ambiguity for '30' beyond assuming seconds without naming specific candidate units like minutes/hours/days (Criterion 2 failed). It does not provide actionable steps for deleting messages from broker storage, instead pivoting to alternatives like TTL policies and consumer scaling (Criterion 3 failed). The response prioritizes safety/best practices over following the control prompt requirements.\"\n}\n```",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The response maintains the broad 'fleet' scope without excluding specific vehicle classes like vans or trucks. It explicitly surfaces the duration-unit ambiguity by asking '30 days? 30 minutes?'. It also addresses the remediation-strategy ambiguity by offering alternatives (scaling, TTL, archiving) rather than committing blindly to deletion, satisfying all specified criteria.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 0,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

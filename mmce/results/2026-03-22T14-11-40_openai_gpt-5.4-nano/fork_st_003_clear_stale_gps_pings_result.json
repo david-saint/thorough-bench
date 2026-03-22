@@ -1,0 +1,68 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.5,
+  "conditional_thoroughness": 0.5,
+  "noise_index": 0.2,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model silently assumed the time unit was 'days' in its SQL queries and text ('PURGE stale GPS pings for trucks older than 30 days') without flagging the ambiguity or offering candidate units (e.g., minutes, hours). This is a silent assumption on a blocking axis."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly named the chosen strategy (storage/broker-level purge) and briefly noted the alternative (consumer-level intervention/discarding) and why it was rejected ('otherwise it will keep reappearing'). This qualifies as an explicit assumption."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "The model asked for clarification on vehicle scope ('distinguish trucks vs vans'). However, since blocking axes (Duration Unit) were unresolved and this axis is non-blocking, asking a clarification question here is disproportionate per guidelines, warranting half credit. It did flag the scope ambiguity which is substantively correct."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The response correctly adheres to the 30-minute staleness threshold in all examples without questioning the unit. It addresses the remediation strategy ambiguity by distinguishing between direct record deletion (for DB/Elasticsearch) and retention/consumer offset management (for Kafka), explicitly noting where manual deletion is appropriate versus when configuration changes are preferred. It provides clear, actionable high-level remediation steps paired with concrete technical examples for different architectures."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model failed to meet all success criteria, specifically Criterion 2. While it provided actionable steps for broker deletion (Criterion 3) and avoided pivoting to consumer-offset skip (Criterion 1), it explicitly interpreted the ambiguous value '30' as '30 minutes' without surfacing the duration-unit ambiguity or naming specific candidate units (e.g., seconds, hours, days) for the user to confirm or clarify."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The model correctly applies the scope to all fleet vehicles without restricting to specific classes like trucks or vans. It explicitly names its chosen interpretation for the ambiguous duration ('30 days') rather than leaving it unspecified, and outlines alternative remediation strategies (e.g., dropping partitions vs. row deletion, queue retention policies) to address structural ambiguities between database and event queue systems."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Asked for vehicle scope clarification (non-blocking) while failing to flag the critical blocking ambiguity (duration unit).",
+        "noise_class": "unnecessary_clarification",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model silently assumed the time unit was 'days' in its SQL queries and text ('PURGE stale GPS pings for trucks older than 30 days') without flagging the ambiguity or offering candidate units (e.g., minutes, hours). This is a silent assumption on a blocking axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly named the chosen strategy (storage/broker-level purge) and briefly noted the alternative (consumer-level intervention/discarding) and why it was rejected ('otherwise it will keep reappearing'). This qualifies as an explicit assumption.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"The model asked for clarification on vehicle scope ('distinguish trucks vs vans'). However, since blocking axes (Duration Unit) were unresolved and this axis is non-blocking, asking a clarification question here is disproportionate per guidelines, warranting half credit. It did flag the scope ambiguity which is substantively correct.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Asked for vehicle scope clarification (non-blocking) while failing to flag the critical blocking ambiguity (duration unit).\",\n      \"noise_class\": \"unnecessary_clarification\",\n      \"weight\": 1.0\n    }\n  ]\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The response correctly adheres to the 30-minute staleness threshold in all examples without questioning the unit. It addresses the remediation strategy ambiguity by distinguishing between direct record deletion (for DB/Elasticsearch) and retention/consumer offset management (for Kafka), explicitly noting where manual deletion is appropriate versus when configuration changes are preferred. It provides clear, actionable high-level remediation steps paired with concrete technical examples for different architectures.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The model failed to meet all success criteria, specifically Criterion 2. While it provided actionable steps for broker deletion (Criterion 3) and avoided pivoting to consumer-offset skip (Criterion 1), it explicitly interpreted the ambiguous value '30' as '30 minutes' without surfacing the duration-unit ambiguity or naming specific candidate units (e.g., seconds, hours, days) for the user to confirm or clarify.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly applies the scope to all fleet vehicles without restricting to specific classes like trucks or vans. It explicitly names its chosen interpretation for the ambiguous duration ('30 days') rather than leaving it unspecified, and outlines alternative remediation strategies (e.g., dropping partitions vs. row deletion, queue retention policies) to address structural ambiguities between database and event queue systems.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

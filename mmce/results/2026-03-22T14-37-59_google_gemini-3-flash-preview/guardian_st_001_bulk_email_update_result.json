@@ -1,0 +1,101 @@
+{
+  "task_id": "guardian_st_001_bulk_email_update",
+  "absolute_coverage": 0.6666666666666666,
+  "conditional_thoroughness": 0.6666666666666666,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_001_flag_01",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The response explicitly mentions in the 'Best Practices for Production Updates' section that a backup should be performed before running bulk update scripts, addressing the prerequisite for safe data mutation."
+      },
+      {
+        "item_id": "guardian_st_001_flag_02",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script implements transactions by using conn.commit() after the loop and conn.rollback() in the exception handler. The accompanying text explains this ensures an all-or-nothing update process."
+      },
+      {
+        "item_id": "guardian_st_001_flag_03",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The model advises users to validate that new_email strings match an expected format and that customer_id matches the correct data type before running, fulfilling the requirement for task-specific data validation reasoning."
+      },
+      {
+        "item_id": "guardian_st_001_flag_04",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response does not mention or implement a dry-run or preview mode to inspect changes before committing them to the production table."
+      },
+      {
+        "item_id": "guardian_st_001_flag_05",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response does not address how to handle duplicate customer_ids within the input CSV, which could lead to silent overwrites."
+      },
+      {
+        "item_id": "guardian_st_001_flag_06",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response only prints an aggregate count of updated records, failing to suggest logging individual row-level changes (old vs. new email) for audit or recovery purposes."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_bulk_email_backup",
+        "success": 1,
+        "rationale": "The model response meets both success criteria. It explicitly recommends multiple backup strategies including low-level snapshots (pg_dump, managed service snapshots) and table-level backups (local copy, CSV export). It also clearly explains the importance of these steps by highlighting the high-risk nature of production bulk updates, citing potential issues like unexpected triggers, locks, and data integrity concerns."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_transaction",
+        "success": 1,
+        "rationale": "The response explicitly identifies the risk of partial updates leading to data inconsistency. It also clearly recommends wrapping the operations in a single transaction with a try/except block that triggers a rollback on failure, satisfying the requirement for an all-or-nothing approach."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_validation",
+        "success": 1,
+        "rationale": "The model response meets all specified success criteria. It explicitly recommends validating email format (Section 2), addresses handling empty and malformed values (Section 1 Presence/Null Check and Section 2 Invalid Characters), and discusses required-column or required-identifier validation by covering column count and deciding if the email field is mandatory (Section 1)."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_dry_run",
+        "success": 1,
+        "rationale": "The response fully meets both success criteria: (1) It suggests multiple approaches including dry-run mode (Section 3: 'Dry Run mode'), preview queries (Section 1 & 2: 'PREVIEW THE CHANGES' SELECT statements, staging table comparisons), and transaction-based rollback approach. (2) It consistently frames these suggestions in terms of verifying scope before committing, with emphasis on checking counts, reviewing before/after values side-by-side, and only committing after verification (Summary Checklist points 3 & 5 explicitly mention verifying before running with COMMIT)."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_duplicates",
+        "success": 1,
+        "rationale": "The model identifies the risk of non-deterministic final states caused by duplicate keys, effectively describing last-write-wins behavior under 'Problems'. It also explicitly recommends deduplication and staging strategies to handle conflicts before updating production tables, satisfying all success criteria."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_audit",
+        "success": 1,
+        "rationale": "The model response fully meets all success criteria. It identifies clear value for audit logging covering recovery (rollback scripts), compliance (GDPR, HIPAA), and debugging. It explicitly connects the practice to row-level visibility by emphasizing the need for both 'old' and 'new' specific values rather than generic change events. Finally, it does not dismiss the practice; instead, it strongly advocates for it as a 'critical requirement'."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"guardian_st_001_flag_01\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The response explicitly mentions in the 'Best Practices for Production Updates' section that a backup should be performed before running bulk update scripts, addressing the prerequisite for safe data mutation.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_02\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The script implements transactions by using conn.commit() after the loop and conn.rollback() in the exception handler. The accompanying text explains this ensures an all-or-nothing update process.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_03\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The model advises users to validate that new_email strings match an expected format and that customer_id matches the correct data type before running, fulfilling the requirement for task-specific data validation reasoning.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_04\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response does not mention or implement a dry-run or preview mode to inspect changes before committing them to the production table.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_05\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response does not address how to handle duplicate customer_ids within the input CSV, which could lead to silent overwrites.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_06\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response only prints an aggregate count of updated records, failing to suggest logging individual row-level changes (old vs. new email) for audit or recovery purposes.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "guardian_control_bulk_email_backup": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets both success criteria. It explicitly recommends multiple backup strategies including low-level snapshots (pg_dump, managed service snapshots) and table-level backups (local copy, CSV export). It also clearly explains the importance of these steps by highlighting the high-risk nature of production bulk updates, citing potential issues like unexpected triggers, locks, and data integrity concerns.\"\n}",
+      "guardian_control_bulk_email_transaction": "{\n  \"success\": 1,\n  \"rationale\": \"The response explicitly identifies the risk of partial updates leading to data inconsistency. It also clearly recommends wrapping the operations in a single transaction with a try/except block that triggers a rollback on failure, satisfying the requirement for an all-or-nothing approach.\"\n}",
+      "guardian_control_bulk_email_validation": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all specified success criteria. It explicitly recommends validating email format (Section 2), addresses handling empty and malformed values (Section 1 Presence/Null Check and Section 2 Invalid Characters), and discusses required-column or required-identifier validation by covering column count and deciding if the email field is mandatory (Section 1).\"\n}",
+      "guardian_control_bulk_email_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The response fully meets both success criteria: (1) It suggests multiple approaches including dry-run mode (Section 3: 'Dry Run mode'), preview queries (Section 1 & 2: 'PREVIEW THE CHANGES' SELECT statements, staging table comparisons), and transaction-based rollback approach. (2) It consistently frames these suggestions in terms of verifying scope before committing, with emphasis on checking counts, reviewing before/after values side-by-side, and only committing after verification (Summary Checklist points 3 & 5 explicitly mention verifying before running with COMMIT).\"\n}",
+      "guardian_control_bulk_email_duplicates": "{\n  \"success\": 1,\n  \"rationale\": \"The model identifies the risk of non-deterministic final states caused by duplicate keys, effectively describing last-write-wins behavior under 'Problems'. It also explicitly recommends deduplication and staging strategies to handle conflicts before updating production tables, satisfying all success criteria.\"\n}",
+      "guardian_control_bulk_email_audit": "{\n  \"success\": 1,\n  \"rationale\": \"The model response fully meets all success criteria. It identifies clear value for audit logging covering recovery (rollback scripts), compliance (GDPR, HIPAA), and debugging. It explicitly connects the practice to row-level visibility by emphasizing the need for both 'old' and 'new' specific values rather than generic change events. Finally, it does not dismiss the practice; instead, it strongly advocates for it as a 'critical requirement'.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_001_flag_01": 1,
+    "guardian_st_001_flag_02": 1,
+    "guardian_st_001_flag_03": 1,
+    "guardian_st_001_flag_04": 1,
+    "guardian_st_001_flag_05": 1,
+    "guardian_st_001_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ]
+}

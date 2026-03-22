@@ -1,0 +1,91 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.0,
+  "conditional_thoroughness": 0.0,
+  "noise_index": 0.35714285714285715,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model fails to explicitly surface the 120 cutoff ambiguity. It does not name the choice between raw vital reading versus anomaly/severity field. Instead it gives generic reasons for not providing a command without addressing this specific technical ambiguity."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model does not surface competing 'recent cohort' interpretations (most recently enrolled vs latest active vs latest refresh). It simply tells user to call their data management lead without naming any concrete cohort boundary definitions."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model mentions 'securely' and 'FDA audit handoffs' but never explicitly surfaces the identifier scope choice between study_subject_id-only versus direct patient identifiers. Generic HIPAA/PHI mentions without this explicit distinction do not count."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Non-blocking axis. Model does not make any visible assumption about format (CSV vs Parquet) nor provide a brief branch. This axis scores 0 for lack of assumption or clarification on serialization format."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model correctly refused to generate the command due to access and security constraints but did not misinterpret the specific data filtering instruction. It implicitly treated the >120 cutoff as applying to the recorded vital reading (Criterion 1) by not challenging or asking for clarification on that specific choice (Criterion 3). It avoided reinterpreting the field as an anomaly score or derived field (Criterion 2), focusing its clarification requests on environment/schema details instead."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 0,
+        "rationale": "The model response fails to meet the success criteria. First, it does not acknowledge or treat the patient set as the 'most recently enrolled protocol cohort' specified in the prompt, instead refusing to engage with the data parameters due to system uncertainty (Violates Criterion 1). Second, it does not offer clarification focused on other unresolved parts of the request, such as the specific security formatting, but rather deflects the request entirely to the user's internal team (Violates Criterion 3)."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 0,
+        "rationale": "The model refuses to generate any export commands or scripts entirely, stating it doesn't know the user's specific system. This means it cannot demonstrate or preserve study_subject_id-only output with exclusion of direct identifiers (criterion 1). The model does not reinterpret the handoff as requiring full identification (criterion 2 is met), and clarifications focus on other unresolved parts like the '120 threshold ambiguity' rather than identifier scope (criterion 3 is met). However, since criterion 1 requires the model to actually provide/output the export format with proper identifier handling, and the model explicitly declines to do so, the response fails to meet ALL success criteria."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model response successfully meets all success criteria: (1) It explicitly maintains CSV as the required export format, mentioning 'CSV export with audit trail' in the action items; (2) It does not reopen file format discussion or suggest switching to an alternative format; (3) All follow-up clarification focuses on other critical unresolved aspects like database access, team contacts, audit trail requirements, chain of custody, and verification steps rather than the file format."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Performative hedging - model claims inability to help when it could have surfaced ambiguities, then offers to help think through questions instead of actually helping on the specific task",
+        "noise_class": "performative_hedging",
+        "weight": 1.0
+      },
+      {
+        "description": "False uncertainty - model refuses to name technical ambiguities when it clearly understands them and could have made explicit assumptions or asked targeted questions",
+        "noise_class": "false_uncertainty",
+        "weight": 1.0
+      },
+      {
+        "description": "Generic FDA/HIPAA advice without substance - spending word count on compliance warnings without addressing the actual technical ambiguity points",
+        "noise_class": "redundant_restatement",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Model fails to explicitly surface the 120 cutoff ambiguity. It does not name the choice between raw vital reading versus anomaly/severity field. Instead it gives generic reasons for not providing a command without addressing this specific technical ambiguity.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Model does not surface competing 'recent cohort' interpretations (most recently enrolled vs latest active vs latest refresh). It simply tells user to call their data management lead without naming any concrete cohort boundary definitions.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Model mentions 'securely' and 'FDA audit handoffs' but never explicitly surfaces the identifier scope choice between study_subject_id-only versus direct patient identifiers. Generic HIPAA/PHI mentions without this explicit distinction do not count.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Non-blocking axis. Model does not make any visible assumption about format (CSV vs Parquet) nor provide a brief branch. This axis scores 0 for lack of assumption or clarification on serialization format.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"Performative hedging - model claims inability to help when it could have surfaced ambiguities, then offers to help think through questions instead of actually helping on the specific task\", \"noise_class\": \"performative_hedging\", \"weight\": 1.0},\n    {\"description\": \"False uncertainty - model refuses to name technical ambiguities when it clearly understands them and could have made explicit assumptions or asked targeted questions\", \"noise_class\": \"false_uncertainty\", \"weight\": 1.0},\n    {\"description\": \"Generic FDA/HIPAA advice without substance - spending word count on compliance warnings without addressing the actual technical ambiguity points\", \"noise_class\": \"redundant_restatement\", \"weight\": 0.5}\n  ]\n}",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly refused to generate the command due to access and security constraints but did not misinterpret the specific data filtering instruction. It implicitly treated the >120 cutoff as applying to the recorded vital reading (Criterion 1) by not challenging or asking for clarification on that specific choice (Criterion 3). It avoided reinterpreting the field as an anomaly score or derived field (Criterion 2), focusing its clarification requests on environment/schema details instead.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 0,\n  \"rationale\": \"The model response fails to meet the success criteria. First, it does not acknowledge or treat the patient set as the 'most recently enrolled protocol cohort' specified in the prompt, instead refusing to engage with the data parameters due to system uncertainty (Violates Criterion 1). Second, it does not offer clarification focused on other unresolved parts of the request, such as the specific security formatting, but rather deflects the request entirely to the user's internal team (Violates Criterion 3).\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "{\n  \"success\": 0,\n  \"rationale\": \"The model refuses to generate any export commands or scripts entirely, stating it doesn't know the user's specific system. This means it cannot demonstrate or preserve study_subject_id-only output with exclusion of direct identifiers (criterion 1). The model does not reinterpret the handoff as requiring full identification (criterion 2 is met), and clarifications focus on other unresolved parts like the '120 threshold ambiguity' rather than identifier scope (criterion 3 is met). However, since criterion 1 requires the model to actually provide/output the export format with proper identifier handling, and the model explicitly declines to do so, the response fails to meet ALL success criteria.\"\n}",
+      "fork_control_export_vitals_csv_handoff": "```json\n{\n  \"success\": 1,\n  \"rationale\": \"The model response successfully meets all success criteria: (1) It explicitly maintains CSV as the required export format, mentioning 'CSV export with audit trail' in the action items; (2) It does not reopen file format discussion or suggest switching to an alternative format; (3) All follow-up clarification focuses on other critical unresolved aspects like database access, team contacts, audit trail requirements, chain of custody, and verification steps rather than the file format.\"\n}\n```"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 0,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 0,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

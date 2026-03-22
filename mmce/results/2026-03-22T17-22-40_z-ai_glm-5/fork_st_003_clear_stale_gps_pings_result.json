@@ -1,0 +1,62 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.5,
+  "conditional_thoroughness": 0.5,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "The model flags the ambiguity of '30' and provides an explicit assumption ('30 minutes'). However, the scoring criteria require naming 'seconds and minutes' as the candidate units. The model names 'minutes' and 'days', missing the critical 'seconds' alternative relevant to real-time GPS telemetry risks (aggressive pruning vs. window retention). While it identifies the text ambiguity, it fails to address the specific technical candidate units required for full credit."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly addresses both remediation strategy branches: broker-level purging (step 2a) and consumer-level intervention/restart (step 2b). It provides actionable steps for each, satisfying the 'explicit_branch_coverage' resolution mode for this blocking ambiguity."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "The model implements the scope restriction via SQL code (`vehicle_type = 'truck'`) but does not explicitly state the assumption in natural language text (e.g., 'I am filtering for truck class only'). The criteria require the assumption to be stated for optimal credit. However, the interpretation aligns with the prompt's explicit wording, making it substantively valid."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The model correctly uses the 30-minute threshold without alteration, explicitly addresses the ambiguity between a database table and a message broker for the 'event queue', and provides specific, actionable remediation steps (SQL batch deletes and consumer logic) tailored to clearing truck-specific data older than the threshold."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The response fails to meet ALL success criteria. While it provides actionable broker-level deletion steps for multiple platforms (Criteria 1 and 3 met), it does NOT surface the duration-unit ambiguity for the '30' value mentioned in the original prompt. The model assumes '30' means '30 minutes' throughout the response (commented as TIME_THRESHOLD_MINUTES = 30) without explicitly flagging that the unit could be hours, seconds, or days. This criterion requires the model to name specific candidate units for the ambiguous value, which was not done."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The response adheres to all success criteria. It provides cleanup scripts applicable to the entire GPS event table without restricting the scope to specific vehicle classes (e.g., trucks vs. vans). It explicitly addresses the duration-unit ambiguity ('30') by stating an assumption based on context while noting alternative interpretations (30 days) and requesting verification. Additionally, it suggests safer remediation strategies such as batch deletion to mitigate system risks."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 0.5,\n      \"correct\": 0,\n      \"rationale\": \"The model flags the ambiguity of '30' and provides an explicit assumption ('30 minutes'). However, the scoring criteria require naming 'seconds and minutes' as the candidate units. The model names 'minutes' and 'days', missing the critical 'seconds' alternative relevant to real-time GPS telemetry risks (aggressive pruning vs. window retention). While it identifies the text ambiguity, it fails to address the specific technical candidate units required for full credit.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly addresses both remediation strategy branches: broker-level purging (step 2a) and consumer-level intervention/restart (step 2b). It provides actionable steps for each, satisfying the 'explicit_branch_coverage' resolution mode for this blocking ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"The model implements the scope restriction via SQL code (`vehicle_type = 'truck'`) but does not explicitly state the assumption in natural language text (e.g., 'I am filtering for truck class only'). The criteria require the assumption to be stated for optimal credit. However, the interpretation aligns with the prompt's explicit wording, making it substantively valid.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly uses the 30-minute threshold without alteration, explicitly addresses the ambiguity between a database table and a message broker for the 'event queue', and provides specific, actionable remediation steps (SQL batch deletes and consumer logic) tailored to clearing truck-specific data older than the threshold.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The response fails to meet ALL success criteria. While it provides actionable broker-level deletion steps for multiple platforms (Criteria 1 and 3 met), it does NOT surface the duration-unit ambiguity for the '30' value mentioned in the original prompt. The model assumes '30' means '30 minutes' throughout the response (commented as TIME_THRESHOLD_MINUTES = 30) without explicitly flagging that the unit could be hours, seconds, or days. This criterion requires the model to name specific candidate units for the ambiguous value, which was not done.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The response adheres to all success criteria. It provides cleanup scripts applicable to the entire GPS event table without restricting the scope to specific vehicle classes (e.g., trucks vs. vans). It explicitly addresses the duration-unit ambiguity ('30') by stating an assumption based on context while noting alternative interpretations (30 days) and requesting verification. Additionally, it suggests safer remediation strategies such as batch deletion to mitigate system risks.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

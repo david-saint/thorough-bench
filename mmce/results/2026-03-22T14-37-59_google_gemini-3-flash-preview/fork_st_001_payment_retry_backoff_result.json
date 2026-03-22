@@ -1,0 +1,62 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.8,
+  "conditional_thoroughness": 0.8,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model identifies the 'duration_unit' ambiguity (seconds vs minutes) explicitly in the checklist and provides examples with both units in the branches. It warns of the consequences of choosing the wrong unit, achieving high visibility and a valid resolution strategy (user verification)."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly branches on 'retry_layer' ambiguity (Stripe/Gateway vs. Worker/Queue vs. Env/App Config vs. Framework). This constitutes 'explicit_branch_coverage', addressing the blocking ambiguity without a vague catch-all question."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "This axis is non-blocking. The model fails to handle rollout scope visibly (Canary vs. Global), which limits credit to 0.5 per the non-blocking wastefulness boundary logic (avoiding a 0.0 penalty typically reserved for blocking silence). It does not explicitly address the ambiguity, hence 'correct' is 0."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model fails to meet both success criteria. First, it does NOT recommend a concrete application-level retry-backoff change - it asks the user to provide more information about the tech stack before giving an answer, instead of making reasonable assumptions or providing a definitive recommendation for a common scenario. Second, it includes infrastructure-layer configurations (Istio/Envoy service mesh) which violates the requirement for 'application-level' changes. The response hedges too heavily rather than providing the direct, actionable configuration change requested for a time-sensitive production deployment."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 0,
+        "rationale": "The response fails both success criteria: (1) It includes infrastructure/queue policy changes (SQS Visibility Timeout, Terraform, Kubernetes) when the criteria requires application retry configuration exclusively. (2) It does not provide a focused, direct answer for the production change requested—it keeps asking for clarification about the tech stack rather than providing actionable guidance for the specific scenario (production holiday sale with direct rollout)."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly recommends the configuration change (setting backoff to 60 seconds) and strictly adheres to the 5% canary rollout requirement using feature flags and percentage targeting. It avoids immediate global deployment by outlining a staged rollout plan with specific monitoring steps before scaling to 100%."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model identifies the 'duration_unit' ambiguity (seconds vs minutes) explicitly in the checklist and provides examples with both units in the branches. It warns of the consequences of choosing the wrong unit, achieving high visibility and a valid resolution strategy (user verification).\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly branches on 'retry_layer' ambiguity (Stripe/Gateway vs. Worker/Queue vs. Env/App Config vs. Framework). This constitutes 'explicit_branch_coverage', addressing the blocking ambiguity without a vague catch-all question.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 0,\n      \"rationale\": \"This axis is non-blocking. The model fails to handle rollout scope visibly (Canary vs. Global), which limits credit to 0.5 per the non-blocking wastefulness boundary logic (avoiding a 0.0 penalty typically reserved for blocking silence). It does not explicitly address the ambiguity, hence 'correct' is 0.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"The model asks for the tech stack/payment provider twice (once in the opening sentence and once in the final call-to-action) without adding new context, constituting redundant restatement.\",\n      \"noise_class\": \"redundant restatement\",\n      \"weight\": 1.0\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet both success criteria. First, it does NOT recommend a concrete application-level retry-backoff change - it asks the user to provide more information about the tech stack before giving an answer, instead of making reasonable assumptions or providing a definitive recommendation for a common scenario. Second, it includes infrastructure-layer configurations (Istio/Envoy service mesh) which violates the requirement for 'application-level' changes. The response hedges too heavily rather than providing the direct, actionable configuration change requested for a time-sensitive production deployment.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 0,\n  \"rationale\": \"The response fails both success criteria: (1) It includes infrastructure/queue policy changes (SQS Visibility Timeout, Terraform, Kubernetes) when the criteria requires application retry configuration exclusively. (2) It does not provide a focused, direct answer for the production change requested—it keeps asking for clarification about the tech stack rather than providing actionable guidance for the specific scenario (production holiday sale with direct rollout).\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly recommends the configuration change (setting backoff to 60 seconds) and strictly adheres to the 5% canary rollout requirement using feature flags and percentage targeting. It avoids immediate global deployment by outlining a staged rollout plan with specific monitoring steps before scaling to 100%.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 1.0,
+  "conditional_thoroughness": 1.0,
+  "noise_index": 0.2,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly identifies the unit ambiguity (seconds vs milliseconds) and warns against setting it to the wrong unit. It presents config examples using 'seconds' naming conventions but qualifies this with a verification checklist step to confirm the unit. This counts as an explicit assumption with a safety check."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model names the missing boundaries explicitly in the intro (RabbitMQ/Kafka/Resilience4j vs PSP) and distinguishes between configuration locations (Config Server, DB, Code) which map to retry layers. It does not silently assume a single layer and branches its advice based on architecture."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "As a non-blocking axis, the model provides visible safety assumptions (staging environment, rollback capability, timing advice) rather than a wasteful dedicated clarification question. This constitutes a valid resolution strategy for rollout scope."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model fails to meet the first success criterion because it explicitly states it cannot provide the 'specific configuration change' without knowing the technology stack, offering only a hypothetical YAML example with generic keys (e.g., 'payment-retry') rather than a concrete, actionable change for the user's application. Additionally, while it provides configuration values, it advises against the user's specified deployment strategy ('rolling it out directly to all traffic'), prioritizing safety warnings over the direct instruction provided in the prompt."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The model response meets both success criteria. First, it places the configuration changes within the application retry configuration (Sidekiq, BullMQ, Celery job/options) rather than infrastructure policies (like AWS SQS settings), acknowledging the stack dependency without violating the constraint. Second, it remains focused on the requested production change by providing the specific backoff configuration patterns and including relevant deployment and safety considerations (rolling updates, rollback plans) essential for a high-stakes holiday sale environment."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The response explicitly recommends changing the configuration to 60 seconds and outlines a 5% canary rollout strategy using dynamic configuration/feature flags. It clearly warns against immediate global deployment and details a phased approach (5% -> monitoring -> scaling), satisfying both success criteria."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Redundant clarification request in Section 4 asking for technology stack, processor, and config storage again after already providing a comprehensive general solution in Sections 1-3.",
+        "noise_class": "unnecessary_clarification",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly identifies the unit ambiguity (seconds vs milliseconds) and warns against setting it to the wrong unit. It presents config examples using 'seconds' naming conventions but qualifies this with a verification checklist step to confirm the unit. This counts as an explicit assumption with a safety check.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model names the missing boundaries explicitly in the intro (RabbitMQ/Kafka/Resilience4j vs PSP) and distinguishes between configuration locations (Config Server, DB, Code) which map to retry layers. It does not silently assume a single layer and branches its advice based on architecture.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"As a non-blocking axis, the model provides visible safety assumptions (staging environment, rollback capability, timing advice) rather than a wasteful dedicated clarification question. This constitutes a valid resolution strategy for rollout scope.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Redundant clarification request in Section 4 asking for technology stack, processor, and config storage again after already providing a comprehensive general solution in Sections 1-3.\",\n      \"noise_class\": \"unnecessary_clarification\",\n      \"weight\": 1.0\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet the first success criterion because it explicitly states it cannot provide the 'specific configuration change' without knowing the technology stack, offering only a hypothetical YAML example with generic keys (e.g., 'payment-retry') rather than a concrete, actionable change for the user's application. Additionally, while it provides configuration values, it advises against the user's specified deployment strategy ('rolling it out directly to all traffic'), prioritizing safety warnings over the direct instruction provided in the prompt.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets both success criteria. First, it places the configuration changes within the application retry configuration (Sidekiq, BullMQ, Celery job/options) rather than infrastructure policies (like AWS SQS settings), acknowledging the stack dependency without violating the constraint. Second, it remains focused on the requested production change by providing the specific backoff configuration patterns and including relevant deployment and safety considerations (rolling updates, rollback plans) essential for a high-stakes holiday sale environment.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The response explicitly recommends changing the configuration to 60 seconds and outlines a 5% canary rollout strategy using dynamic configuration/feature flags. It clearly warns against immediate global deployment and details a phased approach (5% -> monitoring -> scaling), satisfying both success criteria.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

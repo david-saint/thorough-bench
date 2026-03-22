@@ -1,0 +1,68 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.6,
+  "conditional_thoroughness": 1.0,
+  "noise_index": 0.1,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model explicitly flags that '30' lacks a time unit and names specific candidate candidates (30 minutes [assumption], 30 seconds, 30 hours). This meets the allowed resolution mode of highly_targeted_clarifying_question or explicit_assumption with named candidates."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "Model silently prescribes broker-level database deletion (SQL DELETE) without explicitly acknowledging the alternative consumer-level intervention (offset skipping/timestamp filtering). While it does ask about platform identity (queue vs table), it doesn't address the remediation strategy ambiguity with the required explicit assumption format that names the chosen approach AND briefly notes the alternative exists."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "Standalone clarification question about vehicle scope when blocking axes remain unaddressed is capped at half credit per scoring notes. The axis also notes explicit handling of blocking axes takes priority, and this question diverts focus. However, a brief inline assumption would have been more appropriate."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The response meets all three success criteria: (1) It uses exactly 30 minutes as the staleness threshold (`STALE_THRESHOLD_MINUTES = 30`) without questioning or reinterpreting the unit. (2) It explicitly surfaces the remediation-strategy ambiguity by providing multiple code paths for different queue backends (PostgreSQL, Redis, Kafka) and clearly notes where broker-level deletion isn't feasible (e.g., 'Kafka doesn't support selective deletion' with consumer-level skip alternatives). (3) It provides actionable high-level remediation steps including a complete Python cleanup script with configuration variables, dry-run mode, batch deletion logic, pre-run checklists, and longer-term remediation recommendations (TTL, queue separation, consumer filtering)."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model response fails to meet ALL success criteria. While it correctly surfaces the duration-unit ambiguity (Criterion 2), it fails Criterion 1 by refusing the primary strategy of broker-level message deletion and pivoting to a consumer-offset skip approach (the Python script) alongside retention configuration. Additionally, it fails Criterion 3 because it does not provide actionable steps for directly deleting messages from broker storage, explicitly advising against that action and suggesting configuration changes (retention/TTL) instead."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The model correctly applies the scope to all fleet vehicles (trucks and vans) without narrowing it. It explicitly names the chosen interpretation for the unit (30 minutes) and justifies it via the context of real-time visibility, addressing the duration-unit ambiguity. It also addresses the remediation-strategy ambiguity (direct execution vs code provision) by providing executable scripts and notes an alternative strategy (TTL auto-expiry) for the future."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Standalone clarification about vehicle scope (vans vs trucks) when blocking axes (duration_unit and remediation_strategy) remain unresolved - this is disproportionate questioning priority",
+        "noise_class": "unnecessary_clarification",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"Model explicitly flags that '30' lacks a time unit and names specific candidate candidates (30 minutes [assumption], 30 seconds, 30 hours). This meets the allowed resolution mode of highly_targeted_clarifying_question or explicit_assumption with named candidates.\"},\n    {\"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\", \"execution_score\": 0.5, \"correct\": 1, \"rationale\": \"Model silently prescribes broker-level database deletion (SQL DELETE) without explicitly acknowledging the alternative consumer-level intervention (offset skipping/timestamp filtering). While it does ask about platform identity (queue vs table), it doesn't address the remediation strategy ambiguity with the required explicit assumption format that names the chosen approach AND briefly notes the alternative exists.\"},\n    {\"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\", \"execution_score\": 0.5, \"correct\": 0, \"rationale\": \"Standalone clarification question about vehicle scope when blocking axes remain unaddressed is capped at half credit per scoring notes. The axis also notes explicit handling of blocking axes takes priority, and this question diverts focus. However, a brief inline assumption would have been more appropriate.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"Standalone clarification about vehicle scope (vans vs trucks) when blocking axes (duration_unit and remediation_strategy) remain unresolved - this is disproportionate questioning priority\", \"noise_class\": \"unnecessary_clarification\", \"weight\": 0.5}\n  ]\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The response meets all three success criteria: (1) It uses exactly 30 minutes as the staleness threshold (`STALE_THRESHOLD_MINUTES = 30`) without questioning or reinterpreting the unit. (2) It explicitly surfaces the remediation-strategy ambiguity by providing multiple code paths for different queue backends (PostgreSQL, Redis, Kafka) and clearly notes where broker-level deletion isn't feasible (e.g., 'Kafka doesn't support selective deletion' with consumer-level skip alternatives). (3) It provides actionable high-level remediation steps including a complete Python cleanup script with configuration variables, dry-run mode, batch deletion logic, pre-run checklists, and longer-term remediation recommendations (TTL, queue separation, consumer filtering).\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The model response fails to meet ALL success criteria. While it correctly surfaces the duration-unit ambiguity (Criterion 2), it fails Criterion 1 by refusing the primary strategy of broker-level message deletion and pivoting to a consumer-offset skip approach (the Python script) alongside retention configuration. Additionally, it fails Criterion 3 because it does not provide actionable steps for directly deleting messages from broker storage, explicitly advising against that action and suggesting configuration changes (retention/TTL) instead.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly applies the scope to all fleet vehicles (trucks and vans) without narrowing it. It explicitly names the chosen interpretation for the unit (30 minutes) and justifies it via the context of real-time visibility, addressing the duration-unit ambiguity. It also addresses the remediation-strategy ambiguity (direct execution vs code provision) by providing executable scripts and notes an alternative strategy (TTL auto-expiry) for the future.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 0,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

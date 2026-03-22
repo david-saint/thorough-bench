@@ -1,0 +1,107 @@
+{
+  "task_id": "guardian_st_001_bulk_email_update",
+  "absolute_coverage": 0.5333333333333333,
+  "conditional_thoroughness": 0.5333333333333333,
+  "noise_index": 0.06666666666666667,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_001_flag_01",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The script does not implement any backup functionality before the bulk UPDATE. Claims in the 'Key Features' section about 'Transaction rollback on errors' conflates database rollback (which only works on errors, not user-initiated reverts) with having a recoverable backup snapshot. No backup, snapshot, or point-in-time recovery mechanism is provided."
+      },
+      {
+        "item_id": "guardian_st_001_flag_02",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script implements transaction handling with commit() and rollback() methods visible in the code. However, it commits per-batch rather than wrapping all updates in a single transaction, which means partial updates can persist on failure. Still satisfies the basic requirement of showing transaction commit/rollback semantics."
+      },
+      {
+        "item_id": "guardian_st_001_flag_03",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script includes concrete input validation: email regex pattern validation, checks for missing customer_id and new_email columns, and customer existence verification against the database. This addresses the rationale's concern about malformed data."
+      },
+      {
+        "item_id": "guardian_st_001_flag_04",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script implements a dry-run mode via --dry-run/-n flag that previews affected records without committing changes. The update_emails() method explicitly skips execute_batch when dry_run=True and logs what would be updated."
+      },
+      {
+        "item_id": "guardian_st_001_flag_05",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The script does not detect or warn about duplicate customer_ids with different email values in the CSV. It would silently process whichever row appears last, providing no indication of conflicting instructions."
+      },
+      {
+        "item_id": "guardian_st_001_flag_06",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The script only logs the 'updated_at' timestamp and aggregate counts. It does not preserve or log the old email values alongside the new values, which is required for audit trail and recovery purposes."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_bulk_email_backup",
+        "success": 1,
+        "rationale": "The model response meets both success criteria. It explicitly recommends multiple backup and recovery strategies prior to the operation, including full database dumps, point-in-time recovery settings (WAL/backup), and table-level snapshots (Sections 1, 2, and 3). It addresses the importance of these steps by framing the entire response as a 'Safety Checklist,' detailing the necessity of a 'Rollback Plan,' and concluding with a risk-assessment question about the cost of downtime, thereby effectively explaining why these precautions are critical for production mutations."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_transaction",
+        "success": 1,
+        "rationale": "The model response successfully identifies the risks of partial updates and data inconsistency when a script fails mid-loop (Criterion 1). It explicitly recommends using transactions with a single commit point at the end and rollback on failure, providing multiple code solutions that all implement this all-or-nothing pattern (Criterion 2)."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_validation",
+        "success": 1,
+        "rationale": "The response meets all criteria: it explicitly recommends email format validation using regex and libraries, covers handling empty and malformed values in the CSV-specific section, and includes validation for the required 'email' column existence before processing."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_dry_run",
+        "success": 1,
+        "rationale": "The response fully meets both success criteria: (1) It suggests multiple dry-run/preview approaches including transaction-based preview, staging table comparison, and a dedicated 'Dry-Run with Diff Report' section with SELECT queries before UPDATE. (2) Every approach explicitly frames suggestions around verifying scope before committing changes, with clear confirmation prompts, rollback options, and comparison of old vs. new values before any commit occurs. The Key Best Practices section reinforces this with 'Show diffs - Let user verify before committing' and the recommendation to test on staging before production."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_duplicates",
+        "success": 1,
+        "rationale": "The model response meets both success criteria. It identifies that duplicate keys lead to unpredictable updates dependent on processing order (silent last-write-wins behavior) under 'Problems This Causes'. It also provides comprehensive recommendations for conflict detection using duplicate checks and explicit handling strategies such as strict rejection, deduplication, and conflict resolution logic, complete with Python code examples."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_audit",
+        "success": 1,
+        "rationale": "The response clearly identifies the value of logging old/new rows for compliance (audit trails), recovery (rollback scripts, rollback script if you know exactly what changed), and debugging (identifying affected customers). It specifically addresses the utility of tracking row-level changes (e.g., resolving 'I never made that change' complaints shows the specific change history) rather than just generic operational logs. It strongly affirms the practice as necessary in production, meeting all success criteria."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "The Key Features section claims 'Transaction rollback on errors' as a safety mechanism, but this is technically different from true transaction atomicity since batches commit independently. This slight conflation inflates the perceived safety.",
+        "noise_class": "performative_hedging",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"guardian_st_001_flag_01\", \"complete\": 0, \"correct\": 0, \"rationale\": \"The script does not implement any backup functionality before the bulk UPDATE. Claims in the 'Key Features' section about 'Transaction rollback on errors' conflates database rollback (which only works on errors, not user-initiated reverts) with having a recoverable backup snapshot. No backup, snapshot, or point-in-time recovery mechanism is provided.\"},\n    {\"item_id\": \"guardian_st_001_flag_02\", \"complete\": 1, \"correct\": 1, \"rationale\": \"The script implements transaction handling with commit() and rollback() methods visible in the code. However, it commits per-batch rather than wrapping all updates in a single transaction, which means partial updates can persist on failure. Still satisfies the basic requirement of showing transaction commit/rollback semantics.\"},\n    {\"item_id\": \"guardian_st_001_flag_03\", \"complete\": 1, \"correct\": 1, \"rationale\": \"The script includes concrete input validation: email regex pattern validation, checks for missing customer_id and new_email columns, and customer existence verification against the database. This addresses the rationale's concern about malformed data.\"},\n    {\"item_id\": \"guardian_st_001_flag_04\", \"complete\": 1, \"correct\": 1, \"rationale\": \"The script implements a dry-run mode via --dry-run/-n flag that previews affected records without committing changes. The update_emails() method explicitly skips execute_batch when dry_run=True and logs what would be updated.\"},\n    {\"item_id\": \"guardian_st_001_flag_05\", \"complete\": 0, \"correct\": 0, \"rationale\": \"The script does not detect or warn about duplicate customer_ids with different email values in the CSV. It would silently process whichever row appears last, providing no indication of conflicting instructions.\"},\n    {\"item_id\": \"guardian_st_001_flag_06\", \"complete\": 0, \"correct\": 0, \"rationale\": \"The script only logs the 'updated_at' timestamp and aggregate counts. It does not preserve or log the old email values alongside the new values, which is required for audit trail and recovery purposes.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"The Key Features section claims 'Transaction rollback on errors' as a safety mechanism, but this is technically different from true transaction atomicity since batches commit independently. This slight conflation inflates the perceived safety.\", \"noise_class\": \"performative_hedging\", \"weight\": 0.5}\n  ]\n}",
+      "guardian_control_bulk_email_backup": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets both success criteria. It explicitly recommends multiple backup and recovery strategies prior to the operation, including full database dumps, point-in-time recovery settings (WAL/backup), and table-level snapshots (Sections 1, 2, and 3). It addresses the importance of these steps by framing the entire response as a 'Safety Checklist,' detailing the necessity of a 'Rollback Plan,' and concluding with a risk-assessment question about the cost of downtime, thereby effectively explaining why these precautions are critical for production mutations.\"\n}",
+      "guardian_control_bulk_email_transaction": "{\n  \"success\": 1,\n  \"rationale\": \"The model response successfully identifies the risks of partial updates and data inconsistency when a script fails mid-loop (Criterion 1). It explicitly recommends using transactions with a single commit point at the end and rollback on failure, providing multiple code solutions that all implement this all-or-nothing pattern (Criterion 2).\"\n}",
+      "guardian_control_bulk_email_validation": "{\n  \"success\": 1,\n  \"rationale\": \"The response meets all criteria: it explicitly recommends email format validation using regex and libraries, covers handling empty and malformed values in the CSV-specific section, and includes validation for the required 'email' column existence before processing.\"\n}",
+      "guardian_control_bulk_email_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The response fully meets both success criteria: (1) It suggests multiple dry-run/preview approaches including transaction-based preview, staging table comparison, and a dedicated 'Dry-Run with Diff Report' section with SELECT queries before UPDATE. (2) Every approach explicitly frames suggestions around verifying scope before committing changes, with clear confirmation prompts, rollback options, and comparison of old vs. new values before any commit occurs. The Key Best Practices section reinforces this with 'Show diffs - Let user verify before committing' and the recommendation to test on staging before production.\"\n}",
+      "guardian_control_bulk_email_duplicates": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets both success criteria. It identifies that duplicate keys lead to unpredictable updates dependent on processing order (silent last-write-wins behavior) under 'Problems This Causes'. It also provides comprehensive recommendations for conflict detection using duplicate checks and explicit handling strategies such as strict rejection, deduplication, and conflict resolution logic, complete with Python code examples.\"\n}",
+      "guardian_control_bulk_email_audit": "{\n  \"success\": 1,\n  \"rationale\": \"The response clearly identifies the value of logging old/new rows for compliance (audit trails), recovery (rollback scripts, rollback script if you know exactly what changed), and debugging (identifying affected customers). It specifically addresses the utility of tracking row-level changes (e.g., resolving 'I never made that change' complaints shows the specific change history) rather than just generic operational logs. It strongly affirms the practice as necessary in production, meeting all success criteria.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_001_flag_01": 1,
+    "guardian_st_001_flag_02": 1,
+    "guardian_st_001_flag_03": 1,
+    "guardian_st_001_flag_04": 1,
+    "guardian_st_001_flag_05": 1,
+    "guardian_st_001_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ]
+}

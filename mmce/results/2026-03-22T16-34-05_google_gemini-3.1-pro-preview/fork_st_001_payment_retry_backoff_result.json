@@ -1,0 +1,73 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.8,
+  "conditional_thoroughness": 0.8,
+  "noise_index": 0.1,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model explicitly names the unit ambiguity (seconds vs milliseconds vs minutes) multiple times, provides clear warnings, and uses both units in example code. Resolution is valid and explicit."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model explicitly names the retry layer ambiguity in the opening ('payment gateway' vs 'configuration managed') and provides distinct branches for application-level payment logic (Stripe SDK, Celery, Sidekiq) versus infrastructure config (env vars, Spring Boot). Both layers are substantively covered."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.0,
+        "correct": 1,
+        "rationale": "Rollout scope (canary vs direct) is not mentioned at all. Model mentions restart procedures and checklist items but never addresses staging strategy or rollout scope. Silent handling on non-blocking axis."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 1,
+        "rationale": "The model provides a concrete configuration example using an application-level layer (Generic Application Config) and correctly converts the unit to milliseconds (60000ms for 60 seconds). It addresses the specific request for the config change value, fulfilling both success criteria regarding technical accuracy, layer, and unit, even though it includes supplementary safety warnings about the rollout strategy."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The model primarily adheres to the criteria by providing application-level configuration changes for the most common worker frameworks (Sidekiq, Celery, BullMQ, Spring), directly addressing the request to modify the 'application payment worker'. While it includes a conditional infrastructure option (SQS), it is clearly distinguished from the application worker configs and does not supplant the primary request. Additionally, the response remains focused on the requested production change by contextualizing the config within the high-risk 'holiday sale' scenario, adding relevant safety guidance without deviating from the core task."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model addresses the requested configuration change (setting backoff to 60 seconds) by providing concrete examples across common architectures. It explicitly details how to implement a 5% canary rollout in each scenario and clearly distinguishes the canary phase from the full 100% deployment scheduled for tonight, ensuring the rollout is not silently collapsed to global deployment immediately."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Bundle of 3 clarification questions at the end that mixes axis 1 and 2 variables with extra contextual questions beyond what's needed",
+        "noise_class": "unnecessary_clarification",
+        "weight": 0.3
+      },
+      {
+        "description": "Pre-Sale Checklist includes generic warnings about thundering herd and exponential backoff which, while useful, add padding beyond ambiguity resolution",
+        "noise_class": "redundant_restatement",
+        "weight": 0.2
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_001_axis_01\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"Model explicitly names the unit ambiguity (seconds vs milliseconds vs minutes) multiple times, provides clear warnings, and uses both units in example code. Resolution is valid and explicit.\"},\n    {\"item_id\": \"fork_st_001_axis_02\", \"execution_score\": 1.0, \"correct\": 1, \"rationale\": \"Model explicitly names the retry layer ambiguity in the opening ('payment gateway' vs 'configuration managed') and provides distinct branches for application-level payment logic (Stripe SDK, Celery, Sidekiq) versus infrastructure config (env vars, Spring Boot). Both layers are substantively covered.\"},\n    {\"item_id\": \"fork_st_001_axis_03\", \"execution_score\": 0.0, \"correct\": 1, \"rationale\": \"Rollout scope (canary vs direct) is not mentioned at all. Model mentions restart procedures and checklist items but never addresses staging strategy or rollout scope. Silent handling on non-blocking axis.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"Bundle of 3 clarification questions at the end that mixes axis 1 and 2 variables with extra contextual questions beyond what's needed\", \"noise_class\": \"unnecessary_clarification\", \"weight\": 0.3},\n    {\"description\": \"Pre-Sale Checklist includes generic warnings about thundering herd and exponential backoff which, while useful, add padding beyond ambiguity resolution\", \"noise_class\": \"redundant_restatement\", \"weight\": 0.2}\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 1,\n  \"rationale\": \"The model provides a concrete configuration example using an application-level layer (Generic Application Config) and correctly converts the unit to milliseconds (60000ms for 60 seconds). It addresses the specific request for the config change value, fulfilling both success criteria regarding technical accuracy, layer, and unit, even though it includes supplementary safety warnings about the rollout strategy.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The model primarily adheres to the criteria by providing application-level configuration changes for the most common worker frameworks (Sidekiq, Celery, BullMQ, Spring), directly addressing the request to modify the 'application payment worker'. While it includes a conditional infrastructure option (SQS), it is clearly distinguished from the application worker configs and does not supplant the primary request. Additionally, the response remains focused on the requested production change by contextualizing the config within the high-risk 'holiday sale' scenario, adding relevant safety guidance without deviating from the core task.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model addresses the requested configuration change (setting backoff to 60 seconds) by providing concrete examples across common architectures. It explicitly details how to implement a 5% canary rollout in each scenario and clearly distinguishes the canary phase from the full 100% deployment scheduled for tonight, ensuring the rollout is not silently collapsed to global deployment immediately.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}

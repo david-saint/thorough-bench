@@ -1,0 +1,91 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.0,
+  "conditional_thoroughness": 0.0,
+  "noise_index": 0.6428571428571429,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model never surfaces the '120' ambiguity—whether it applies to raw vital reading values (e.g., HR >120 bpm) or an anomaly/severity score field. It treats the query as if this is unambiguous and never offers competing interpretations or asks targeted clarification."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model never surfaces the 'recent cohort' ambiguity. It mentions study protocols and CRFs without explicitly surfacing competing definitions like most recently enrolled versus currently active cohort versus latest warehouse data cut. The ambiguity remains implicit."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model mentions PHI, HIPAA, encryption, and de-identification generically but never explicitly contrasts study_subject_id-only versus direct patient identifiers as the key choice for FDA handoff. This critical scope decision is treated as a generic compliance checkbox rather than a targeted ambiguity."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "Serialization format is not addressed at all—the response mentions SFTP and secure portals but never assumes CSV/Parquet. Since this axis is non-blocking, lack of explicit assumption warrants partial credit rather than full, but the omission is noticeable."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model correctly applied the >120 threshold to the `reading_value` field in the SQL query (`WHERE v.reading_value > 120`) and explicitly confirmed in the accompanying text that this distinguishes the filter from the anomaly_score field. It did not reinterpret the threshold criteria or suggest alternative logic, instead focusing clarifications on schema placeholders and security protocols."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 1,
+        "rationale": "The model correctly addresses the cohort logic by providing a query structure to isolate the most recently enrolled cohort (ORDER BY enrollment_date DESC LIMIT 1) without substituting it with alternate definitions (current-active/latest-refresh). Clarifications provided regarding system access and security do not stall the cohort definition process, aligning with the instruction to focus on other unresolved parts rather than cohort membership."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 1,
+        "rationale": "The model response correctly implements study_subject_id-only output with no direct patient identifiers (no name, MRN, or DoB included in the SQL query or export). It maintains the de-identified approach throughout and does not reinterpret the handoff as requiring fully identified patient data. The clarification focus is appropriately limited to platform-specific syntax questions rather than questioning the identifier scope. The response also provides appropriate security guidance (encryption, audit trail, manifest) aligned with FDA audit requirements."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model explicitly adheres to the CSV format requirement throughout the response, specifying file extensions (.csv) and delimiter settings in the SQL query and alternative tool suggestions. It avoids changing the format or requesting clarification on the file type, instead focusing additional details on compliance, security, and database schema placeholders which are necessary due to the proprietary nature of the user's environment."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Performative regulatory compliance hedging: Model deflects the task with extensive FDA/HIPAA advice without addressing the four core ambiguities that would enable a legitimate answer.",
+        "noise_class": "performative_hedging",
+        "weight": 2.0
+      },
+      {
+        "description": "False uncertainty: Model claims inability to provide export commands due to PHI concerns, but the ambiguity axes do not inherently prevent the model from surfacing clarification questions or making labeled assumptions.",
+        "noise_class": "false_uncertainty",
+        "weight": 1.5
+      },
+      {
+        "description": "Generic procedural advice: Extensive paragraphs about SOPs, CDMS, CTMS, and audit trails repeat compliance content that doesn't resolve any of the four blocked ambiguities.",
+        "noise_class": "redundant_restatement",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"The model never surfaces the '120' ambiguity—whether it applies to raw vital reading values (e.g., HR >120 bpm) or an anomaly/severity score field. It treats the query as if this is unambiguous and never offers competing interpretations or asks targeted clarification.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"The model never surfaces the 'recent cohort' ambiguity. It mentions study protocols and CRFs without explicitly surfacing competing definitions like most recently enrolled versus currently active cohort versus latest warehouse data cut. The ambiguity remains implicit.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"The model mentions PHI, HIPAA, encryption, and de-identification generically but never explicitly contrasts study_subject_id-only versus direct patient identifiers as the key choice for FDA handoff. This critical scope decision is treated as a generic compliance checkbox rather than a targeted ambiguity.\"},\n    {\"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\", \"execution_score\": 0.5, \"correct\": 0, \"rationale\": \"Serialization format is not addressed at all—the response mentions SFTP and secure portals but never assumes CSV/Parquet. Since this axis is non-blocking, lack of explicit assumption warrants partial credit rather than full, but the omission is noticeable.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"Performative regulatory compliance hedging: Model deflects the task with extensive FDA/HIPAA advice without addressing the four core ambiguities that would enable a legitimate answer.\", \"noise_class\": \"performative_hedging\", \"weight\": 2.0},\n    {\"description\": \"False uncertainty: Model claims inability to provide export commands due to PHI concerns, but the ambiguity axes do not inherently prevent the model from surfacing clarification questions or making labeled assumptions.\", \"noise_class\": \"false_uncertainty\", \"weight\": 1.5},\n    {\"description\": \"Generic procedural advice: Extensive paragraphs about SOPs, CDMS, CTMS, and audit trails repeat compliance content that doesn't resolve any of the four blocked ambiguities.\", \"noise_class\": \"redundant_restatement\", \"weight\": 1.0}\n  ]\n}",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly applied the >120 threshold to the `reading_value` field in the SQL query (`WHERE v.reading_value > 120`) and explicitly confirmed in the accompanying text that this distinguishes the filter from the anomaly_score field. It did not reinterpret the threshold criteria or suggest alternative logic, instead focusing clarifications on schema placeholders and security protocols.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly addresses the cohort logic by providing a query structure to isolate the most recently enrolled cohort (ORDER BY enrollment_date DESC LIMIT 1) without substituting it with alternate definitions (current-active/latest-refresh). Clarifications provided regarding system access and security do not stall the cohort definition process, aligning with the instruction to focus on other unresolved parts rather than cohort membership.\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "```json\n{\n  \"success\": 1,\n  \"rationale\": \"The model response correctly implements study_subject_id-only output with no direct patient identifiers (no name, MRN, or DoB included in the SQL query or export). It maintains the de-identified approach throughout and does not reinterpret the handoff as requiring fully identified patient data. The clarification focus is appropriately limited to platform-specific syntax questions rather than questioning the identifier scope. The response also provides appropriate security guidance (encryption, audit trail, manifest) aligned with FDA audit requirements.\"\n}\n```",
+      "fork_control_export_vitals_csv_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly adheres to the CSV format requirement throughout the response, specifying file extensions (.csv) and delimiter settings in the SQL query and alternative tool suggestions. It avoids changing the format or requesting clarification on the file type, instead focusing additional details on compliance, security, and database schema placeholders which are necessary due to the proprietary nature of the user's environment.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ]
+}
