@@ -47,12 +47,21 @@ class OpenRouterClient:
                     model=self.model,
                     messages=messages,
                 )
+                if not response.choices:
+                    raise ValueError(f"OpenRouter returned empty or missing choices. Response: {response}")
                 return response.choices[0].message.content or ""
             except openai.AuthenticationError:
                 raise
-            except (openai.RateLimitError, openai.APIConnectionError) as e:
+            except (
+                openai.RateLimitError,
+                openai.APIConnectionError,
+                openai.InternalServerError,
+                ValueError,
+            ) as e:
                 last_error = e
                 if attempt < 2:
                     time.sleep(2**attempt)  # 1s, 2s
 
-        raise last_error  # type: ignore[misc]
+        if last_error:
+            raise last_error
+        raise RuntimeError("Unknown error in OpenRouter client")

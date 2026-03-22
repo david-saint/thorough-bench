@@ -325,6 +325,9 @@ def run_pipeline(
             if not config.dry_run:
                 path = write_task(task, config.output_dir)
                 _log(f"  Written: {path}")
+            elif config.dry_run_dir:
+                path = write_task(task, config.dry_run_dir)
+                _log(f"  [DRY RUN] Written to: {path}")
             else:
                 _log(f"  [DRY RUN] Would write: {task_id}")
 

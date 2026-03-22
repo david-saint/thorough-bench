@@ -13,12 +13,14 @@ def cmd_generate(args: argparse.Namespace) -> None:
     """Generate tasks using the create-review-iterate pipeline."""
     from taskgen.pipeline import run_pipeline
 
+    dry_run = args.dry_run or bool(args.dry_run_dir)
     config = TaskGenConfig(
         num_fork_tasks=args.count if args.dimension in ("fork", "both") else 0,
         num_guardian_tasks=args.count if args.dimension in ("guardian", "both") else 0,
         max_iterations=args.max_iterations,
         output_dir=args.output_dir,
-        dry_run=args.dry_run,
+        dry_run=dry_run,
+        dry_run_dir=args.dry_run_dir or "",
         resume=args.resume,
     )
     if args.creator_model:
@@ -147,7 +149,11 @@ def main() -> None:
     )
     gen.add_argument(
         "--dry-run", action="store_true",
-        help="Validate and review but don't write files",
+        help="Validate and review but don't write to output-dir",
+    )
+    gen.add_argument(
+        "--dry-run-dir",
+        help="Write dry-run output YAMLs to this directory (implies --dry-run)",
     )
     gen.add_argument(
         "--resume", action="store_true",

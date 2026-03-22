@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #FAF9F6;
+  --color-ink: #111111;
+  --color-ink-light: #4A4A4A;
+  --color-sage: #9CAF88;
+  --color-terracotta: #C27A71;
+  --color-dustyblue: #7E91A3;
+  --color-faint: #E5E2DA;
+  --color-faint-hover: #D8D4CA;
+  
+  --font-serif: var(--font-playfair), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: var(--font-fira), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@utility font-serif {
+  font-family: var(--font-serif);
+}
+
+@utility font-mono {
+  font-family: var(--font-mono);
+}
+
+@utility text-ink-light {
+  color: var(--color-ink-light);
+}
+
+@utility bg-paper {
+  background-color: var(--color-paper);
+}
+
+@utility text-ink {
+  color: var(--color-ink);
+}
+
+@utility bg-sage {
+  background-color: var(--color-sage);
+}
+
+@utility border-faint {
+  border-color: var(--color-faint);
+}
+
+:root {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for an academic feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-paper);
+  border-left: 1px solid var(--color-faint);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-faint-hover);
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sage);
+}

@@ -16,7 +16,7 @@ MODELS = {
     "gemini-3.1-flash-lite": "google/gemini-3.1-flash-lite-preview",
 }
 
-DEFAULT_JUDGE = "openai/gpt-5.4-mini"
+DEFAULT_JUDGE = "qwen/qwen3.5-flash-02-23"
 
 
 def main():

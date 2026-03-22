@@ -11,8 +11,8 @@ class TaskGenConfig:
     num_fork_tasks: int = 35
     num_guardian_tasks: int = 35
     max_iterations: int = 3
-    creator_model: str = "openai/gpt-5.4"
-    reviewer_model: str = "anthropic/claude-opus-4.6"
+    creator_model: str = "anthropic/claude-opus-4.6"
+    reviewer_model: str = "openai/gpt-5.4"
     scenario_model: str = "google/gemini-3.1-pro-preview"
     reasoning_effort: str = "xhigh"
     review_pass_threshold: float = 0.8
@@ -21,6 +21,7 @@ class TaskGenConfig:
     output_dir: str = "mmce/tasks"
     progress_file: str = "taskgen/state/progress.json"
     dry_run: bool = False
+    dry_run_dir: str = ""
     resume: bool = False
 
     # Model rotation: swap creator/reviewer every N tasks for diversity
