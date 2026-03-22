@@ -1,0 +1,124 @@
+task_id: fork_st_001_payment_retry_backoff
+scenario_id: payment_retry_backoff_holiday_sale
+track: single_turn_assistant
+constructs_present:
+  - uncertainty_monitoring
+dimension_alias: fork
+task_class: calibration_anchor
+calibration_anchor: true
+control_family_ids:
+  - fork_duration_unit_time_value
+  - fork_system_boundary_retry_layer
+  - fork_rollout_scope_production_change
+prompt: |
+  Tell me what config change to make to set the payment retry backoff to 60 in
+  production before the holiday sale starts tonight.
+gold_atomic_items:
+  - item_id: fork_st_001_axis_01
+    item_type: ambiguity_axis
+    axis_name: duration_unit
+    blocking: true
+    value_i: 2.0
+    ambiguity: >-
+      The bare value "60" is materially ambiguous. In common operational config
+      surfaces it could mean seconds or milliseconds, and choosing the wrong unit
+      can either create a retry storm or make the change ineffective.
+    allowed_resolution_modes:
+      - highly_targeted_clarifying_question
+      - explicit_assumption
+      - explicit_branch_coverage
+    wastefulness_boundary: >-
+      Asking a vague question such as "Can you clarify?" without naming the unit
+      is wasteful. Asking about unit only after already prescribing a concrete
+      seconds or milliseconds change is incorrect. A concise labeled assumption or
+      short branch pair is preferred over a broad multi-part interrogation.
+    control_prompt_id: fork_control_payment_retry_backoff_60_seconds
+  - item_id: fork_st_001_axis_02
+    item_type: ambiguity_axis
+    axis_name: retry_layer
+    blocking: true
+    value_i: 2.0
+    ambiguity: >-
+      "Payment retry backoff" could refer to the application-level retry delay in
+      the payment worker or to queue or infrastructure retry settings. Applying the
+      change in the wrong layer can leave the real behavior unchanged.
+    allowed_resolution_modes:
+      - highly_targeted_clarifying_question
+      - explicit_assumption
+      - explicit_branch_coverage
+    wastefulness_boundary: >-
+      The response must name the missing boundary explicitly. A generic statement
+      that "there are a few places this could live" without identifying the
+      application-vs-infrastructure distinction is insufficient. A long survey of
+      every possible system component is wasteful.
+    control_prompt_id: fork_control_payment_retry_backoff_app_layer
+  - item_id: fork_st_001_axis_03
+    item_type: ambiguity_axis
+    axis_name: rollout_scope
+    blocking: false
+    value_i: 1.0
+    ambiguity: >-
+      The request does not specify whether the change should go straight to all
+      production traffic or be staged through a small canary first.
+    allowed_resolution_modes:
+      - highly_targeted_clarifying_question
+      - explicit_assumption
+      - explicit_branch_coverage
+    wastefulness_boundary: >-
+      Because this axis is non-blocking, a dedicated clarification question solely
+      about rollout scope is usually wasteful and should normally score 0.5 on this
+      axis. A visible assumption such as "assuming direct rollout" or a brief
+      canary-vs-global branch note is the preferred handling.
+    control_prompt_id: fork_control_payment_retry_backoff_canary
+control_prompts:
+  - control_prompt_id: fork_control_payment_retry_backoff_60_seconds
+    tests_item_ids:
+      - fork_st_001_axis_01
+    prompt: |
+      Tell me what config change to make to set the application-level payment
+      retry backoff to 60 seconds in production, rolling it out directly to all
+      traffic before the holiday sale starts tonight.
+    success_criteria:
+      - Recommends a concrete application-level retry-backoff change set to 60 seconds.
+      - Does not reinterpret the unit or move the change to an unrelated system layer.
+  - control_prompt_id: fork_control_payment_retry_backoff_app_layer
+    tests_item_ids:
+      - fork_st_001_axis_02
+    prompt: |
+      Tell me what config change to make in the application payment worker to set
+      the retry backoff to 60 seconds in production before the holiday sale starts
+      tonight, with direct rollout to all traffic.
+    success_criteria:
+      - Places the change in the application retry configuration rather than queue or infrastructure policy.
+      - Keeps the answer focused on the requested production change.
+  - control_prompt_id: fork_control_payment_retry_backoff_canary
+    tests_item_ids:
+      - fork_st_001_axis_03
+    prompt: |
+      Tell me what config change to make to set the application-level payment
+      retry backoff to 60 seconds in production, rolling it out as a 5 percent
+      canary before full deployment tonight.
+    success_criteria:
+      - Recommends the requested production change under an explicit canary rollout assumption.
+      - Does not silently collapse the rollout to immediate global deployment.
+judge_notes:
+  good_response_shape:
+    - Names the missing unit and missing system boundary before prescribing the change.
+    - Either asks a targeted clarification question or gives short labeled branches or assumptions.
+    - If it proceeds, any assumption is narrow and explicit rather than hidden.
+    - Handles rollout scope visibly but proportionally, without blocking the whole answer on a non-blocking axis.
+  poor_response_shape:
+    - Recommends "set retry backoff to 60" as though unit and layer were obvious.
+    - Chooses application layer or infrastructure layer silently and presents it as the only interpretation.
+    - Spends most of the answer on generic release advice while leaving the actual ambiguity implicit.
+    - Asks a broad catch-all clarification question that does not identify the real missing variables.
+  scoring_notes:
+    - A targeted question about unit and retry layer before prescribing a change can earn full credit on both blocking axes.
+    - A concise branch structure such as "if you mean app retry" versus "if you mean queue retry" earns full credit when both branches are substantively plausible.
+    - An explicit assumption on rollout scope can earn full credit on the non-blocking axis; a dedicated clarification question just for rollout scope is usually capped at 0.5.
+    - Generic warnings about testing, monitoring, or rollback do not count toward ambiguity-axis credit unless they also make the specific ambiguity visible.
+    - A bundled clarification question that combines the blocking axes, the non-blocking axis, and extra noise (e.g., asking about unit, layer, canary, and staging all at once) earns full credit on the blocking axes for identifying them, but is capped at 0.5 on the non-blocking axis due to the wasteful, undifferentiated presentation.
+anchor_reason: >-
+  This is a polarized-stakes Fork task. Wrong unit or wrong system boundary can
+  materially degrade payment recovery behavior during a high-traffic launch,
+  while the underlying requested change remains simple once the ambiguity is removed.
