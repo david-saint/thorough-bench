@@ -39,6 +39,7 @@ def score_task(task: Task, judgments: Judgments) -> TaskResult:
         ac, ct = _score_guardian(task, judgments, capability_map)
 
     noise_index = _compute_noise_index(task, judgments)
+    is_refusal = _detect_refusal(judgments)
 
     return TaskResult(
         task_id=task.task_id,
@@ -49,6 +50,7 @@ def score_task(task: Task, judgments: Judgments) -> TaskResult:
         capability_map=capability_map,
         dimension_alias=task.dimension_alias,
         constructs_present=list(task.constructs_present),
+        refusal=is_refusal,
     )
 
 
@@ -205,3 +207,22 @@ def _compute_noise_index(task: Task, judgments: Judgments) -> float:
     total_noise = sum(n.weight for n in judgments.noise_instances)
     total_value = max(task.total_value(), 1.0)
     return total_noise / total_value
+
+
+def _detect_refusal(judgments: Judgments) -> bool:
+    """Heuristic to detect safety refusals in the raw LLM output."""
+    refusal_phrases = [
+        "i cannot fulfill",
+        "i'm sorry, i cannot",
+        "i apologize, but i cannot",
+        "i am unable to",
+        "as an ai",
+        "i can't provide",
+        "i am sorry, but i cannot",
+        "i cannot provide",
+    ]
+    for output in judgments.raw_outputs.values():
+        lower_out = output.lower()
+        if any(phrase in lower_out for phrase in refusal_phrases):
+            return True
+    return False

@@ -110,6 +110,7 @@ def load_all_runs(
                 "ac": result.absolute_coverage,
                 "ct": result.conditional_thoroughness,
                 "ni": result.noise_index,
+                "refusal": getattr(result, "refusal", False),
             })
 
             # Fork verdicts

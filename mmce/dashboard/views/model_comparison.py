@@ -24,6 +24,15 @@ def _ac_ct_scatter(data: DashboardData) -> pn.pane.Bokeh:
     if df.empty:
         return pn.pane.Markdown("No data")
 
+    # Add refusal rate if available in tasks_df
+    tasks = data.tasks_df.copy()
+    if not tasks.empty and "refusal" in tasks.columns:
+        ref_rates = tasks.groupby("model")["refusal"].mean().reset_index(name="ref_rate")
+        df = df.merge(ref_rates, on="model", how="left")
+        df["ref_rate"] = df["ref_rate"].fillna(0)
+    else:
+        df["ref_rate"] = 0.0
+
     colors = _model_colors(df["model"].tolist())
     df["color"] = df["model"].map(colors)
     df["gap"] = (df["composite_ct"] - df["composite_ac"]).round(3)
@@ -57,6 +66,7 @@ def _ac_ct_scatter(data: DashboardData) -> pn.pane.Bokeh:
         ("AC", "@composite_ac{0.000}"),
         ("CT", "@composite_ct{0.000}"),
         ("Gap", "@gap{0.000}"),
+        ("Refusals", "@ref_rate{0.0%}"),
     ]))
 
     p.legend.location = "top_left"
@@ -146,8 +156,97 @@ def _ct_ni_quadrant(data: DashboardData) -> pn.pane.Bokeh:
     return pn.pane.Bokeh(p)
 
 
+def _ac_cap_scatter(data: DashboardData) -> pn.pane.Bokeh:
+    """Chart C: AC vs Base Capability scatter."""
+    df = data.runs_df.copy()
+    if df.empty:
+        return pn.pane.Markdown("No data")
+
+    colors = _model_colors(df["model"].tolist())
+    df["color"] = df["model"].map(colors)
+    # cap = AC / CT
+    df["cap"] = df.apply(lambda r: r["composite_ac"] / r["composite_ct"] if r["composite_ct"] > 0 else 0, axis=1)
+
+    source = ColumnDataSource(df)
+
+    p = figure(
+        title="Complex Score vs Base Capability",
+        x_axis_label="Base Capability (AC / CT)",
+        y_axis_label="Absolute Coverage (AC)",
+        width=500, height=400,
+        tools="pan,wheel_zoom,reset",
+        x_range=(-0.05, 1.05), y_range=(-0.05, 1.05),
+    )
+
+    # Median line
+    med_cap = df["cap"].median()
+    p.add_layout(Span(location=med_cap, dimension="height",
+                       line_color="gray", line_dash="dashed", line_alpha=0.5))
+
+    p.scatter(
+        "cap", "composite_ac",
+        source=source,
+        size=14,
+        color="color",
+        alpha=0.8,
+        legend_field="model",
+    )
+
+    p.add_tools(HoverTool(tooltips=[
+        ("Model", "@model"),
+        ("AC", "@composite_ac{0.000}"),
+        ("Capability", "@cap{0.000}"),
+    ]))
+
+    p.legend.location = "top_left"
+    p.legend.label_text_font_size = "9pt"
+
+    return pn.pane.Bokeh(p)
+
+
+def _capability_bars(data: DashboardData) -> pn.pane.Bokeh:
+    """Chart D: Base Capability (AC/CT) horizontal bars."""
+    df = data.runs_df.copy()
+    if df.empty:
+        return pn.pane.Markdown("No data")
+
+    df["cap"] = df.apply(lambda r: r["composite_ac"] / r["composite_ct"] if r["composite_ct"] > 0 else 0, axis=1)
+    df = df.sort_values("cap", ascending=False).reset_index(drop=True)
+
+    colors = _model_colors(df["model"].tolist())
+    df["color"] = df["model"].map(colors)
+
+    source = ColumnDataSource(df)
+
+    p = figure(
+        title="Base Capability Ranking (AC / CT)",
+        x_axis_label="Capability Score (1.0 = handles all concepts in isolation)",
+        y_range=df["model"].tolist()[::-1],  # Reverse for descending order
+        width=1000, height=400,
+        tools="pan,wheel_zoom,reset",
+        x_range=(-0.02, 1.05),
+    )
+
+    p.hbar(
+        y="model", right="cap",
+        source=source,
+        height=0.6,
+        color="color",
+        alpha=0.8,
+    )
+
+    p.add_tools(HoverTool(tooltips=[
+        ("Model", "@model"),
+        ("Capability", "@cap{0.000}"),
+        ("AC", "@composite_ac{0.000}"),
+        ("CT", "@composite_ct{0.000}"),
+    ]))
+
+    return pn.pane.Bokeh(p)
+
+
 def _gap_bars(data: DashboardData) -> pn.pane.Bokeh:
-    """Chart C: Thoroughness Gap horizontal bars."""
+    """Chart E: Thoroughness Gap horizontal bars."""
     df = data.runs_df.copy()
     if df.empty:
         return pn.pane.Markdown("No data")
@@ -190,13 +289,76 @@ def _gap_bars(data: DashboardData) -> pn.pane.Bokeh:
     return pn.pane.Bokeh(p)
 
 
+def _strategy_bias_bars(data: DashboardData) -> pn.pane.Bokeh:
+    """Chart F: Strategy Bias Profile (Steamrolling) for Fork tasks."""
+    df = data.items_df.copy()
+    if df.empty or "dimension" not in df.columns:
+        return pn.pane.Markdown("No data")
+
+    fork_df = df[df["dimension"] == "fork"].copy()
+    if fork_df.empty:
+        return pn.pane.Markdown("No fork data")
+
+    # group by model and execution_score to get counts
+    counts = fork_df.groupby(["model", "execution_score"]).size().unstack(fill_value=0)
+    
+    # Calculate percentages
+    totals = counts.sum(axis=1)
+    # Handle possible missing score columns safely
+    asked = counts.get(1.0, 0) / totals * 100
+    wasteful = counts.get(0.5, 0) / totals * 100
+    steamrolled = counts.get(0.0, 0) / totals * 100
+    
+    plot_df = pd.DataFrame({
+        "model": counts.index,
+        "Asked": asked,
+        "Wasteful": wasteful,
+        "Steamrolled": steamrolled,
+    }).reset_index(drop=True)
+
+    source = ColumnDataSource(plot_df)
+    categories = ["Asked", "Wasteful", "Steamrolled"]
+    colors = ["#22c55e", "#f59e0b", "#ef4444"]
+
+    p = figure(
+        title="Strategy Bias Profile: Disambiguation",
+        x_axis_label="Percentage of Fork Items (%)",
+        y_range=plot_df["model"].tolist()[::-1],
+        width=1000, height=400,
+        tools="pan,wheel_zoom,reset",
+        x_range=(-0.5, 100.5),
+    )
+
+    p.hbar_stack(
+        categories, y="model", height=0.6, color=colors, source=source,
+        legend_label=["Asked (Safe)", "Wasteful Friction", "Steamrolled (Assumption)"]
+    )
+
+    p.add_tools(HoverTool(tooltips=[
+        ("Model", "@model"),
+        ("Asked", "@Asked{0.1f}%"),
+        ("Wasteful", "@Wasteful{0.1f}%"),
+        ("Steamrolled", "@Steamrolled{0.1f}%"),
+    ]))
+
+    p.legend.location = "top_right"
+    p.legend.orientation = "horizontal"
+
+    return pn.pane.Bokeh(p)
+
+
 def build(data: DashboardData) -> pn.Column:
     """Build the model comparison tab."""
     return pn.Column(
         pn.pane.Markdown("## Model Comparison"),
         pn.Row(
             _ac_ct_scatter(data),
-            _ct_ni_quadrant(data),
+            _ac_cap_scatter(data),
         ),
-        _gap_bars(data),
+        pn.Row(
+            _ct_ni_quadrant(data),
+            _gap_bars(data),
+        ),
+        _capability_bars(data),
+        _strategy_bias_bars(data),
     )

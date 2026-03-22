@@ -178,3 +178,5 @@ class TaskResult(BaseModel):
     capability_map: dict[str, int] = Field(default_factory=dict)  # item_id -> capable_i
     dimension_alias: str = ""
     constructs_present: list[str] = Field(default_factory=list)
+    refusal: bool = False
+

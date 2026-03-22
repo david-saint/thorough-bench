@@ -21,6 +21,7 @@ export interface TaskRow {
   ac: number;
   ct: number;
   ni: number;
+  refusal: boolean;
 }
 
 export interface ItemRow {
@@ -189,6 +190,7 @@ export function loadDashboardData(useCache = true): DashboardData {
           ac: res.absolute_coverage ?? 0,
           ct: res.conditional_thoroughness ?? 0,
           ni: res.noise_index ?? 0,
+          refusal: res.refusal || false,
         });
 
         const judgs = res.judgments || {};
