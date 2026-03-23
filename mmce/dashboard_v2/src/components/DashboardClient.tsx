@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { DashboardData } from '@/lib/data-loader';
-import { Settings2, BarChart2, Activity, Zap, ShieldAlert, ListTree } from 'lucide-react';
+import { Settings2, BarChart2, Activity, Zap, ShieldAlert, ListTree, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import LeaderboardView from './views/LeaderboardView';
@@ -29,6 +29,7 @@ const TABS: { id: TabType; label: string; icon: React.ReactNode }[] = [
 export default function DashboardClient({ initialData, defaultRuns }: DashboardClientProps) {
   const [selectedRuns, setSelectedRuns] = useState<Set<string>>(new Set(defaultRuns));
   const [activeTab, setActiveTab] = useState<TabType>('leaderboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Filter data based on selected runs
   const filteredData = useMemo(() => {
@@ -53,12 +54,28 @@ export default function DashboardClient({ initialData, defaultRuns }: DashboardC
   };
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full relative">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-ink/20 z-40 md:hidden" 
+          onClick={() => setIsSidebarOpen(false)} 
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 border-r border-faint bg-white flex flex-col shrink-0">
-        <div className="p-4 border-b border-faint flex items-center gap-2">
-          <Settings2 size={18} className="text-sage" />
-          <h2 className="font-serif font-semibold text-lg">Settings</h2>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-faint bg-white flex flex-col shrink-0 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-4 border-b border-faint flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Settings2 size={18} className="text-sage" />
+            <h2 className="font-serif font-semibold text-lg">Settings</h2>
+          </div>
+          <button 
+            className="md:hidden text-ink-light hover:text-ink"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <X size={20} />
+          </button>
         </div>
         
         <div className="p-4 flex-1 overflow-y-auto">
@@ -101,31 +118,39 @@ export default function DashboardClient({ initialData, defaultRuns }: DashboardC
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 bg-paper">
         {/* Navigation */}
-        <nav className="flex items-center gap-1 px-8 pt-6 border-b border-faint shrink-0">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab.id ? 'text-ink' : 'text-ink-light hover:text-ink'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId="activeTabIndicator"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-sage"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-          ))}
-        </nav>
+        <div className="flex items-center border-b border-faint shrink-0 px-4 md:px-8 pt-4 md:pt-6 bg-paper">
+          <button 
+            className="mr-4 pb-2 md:hidden text-ink-light hover:text-ink flex-shrink-0"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu size={20} />
+          </button>
+          <nav className="flex items-center gap-1 overflow-x-auto whitespace-nowrap no-scrollbar pb-0">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === tab.id ? 'text-ink' : 'text-ink-light hover:text-ink'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-sage"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
 
         {/* View Area */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

@@ -7,7 +7,7 @@ export default function Home() {
 
   return (
     <main className="flex-1 flex flex-col h-screen overflow-hidden">
-      <header className="px-8 py-6 border-b border-faint shrink-0 flex items-baseline justify-between">
+      <header className="px-4 md:px-8 py-4 md:py-6 border-b border-faint shrink-0 flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between">
         <div>
           <h1 className="font-serif text-3xl tracking-tight text-ink font-semibold">MMCE Thoroughness Dashboard</h1>
           <p className="text-sm text-ink-light mt-1 uppercase tracking-widest font-medium">Evaluation Results & Analytics</p>
