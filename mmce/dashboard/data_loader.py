@@ -95,6 +95,7 @@ def load_all_runs(
             "n_tasks": len(meta.get("tasks_evaluated", [])),
             "composite_ct": meta.get("composite_ct"),
             "composite_ac": meta.get("composite_ac"),
+            "prompt_variant": meta.get("prompt_variant", ""),
         })
 
         # Parse each task result

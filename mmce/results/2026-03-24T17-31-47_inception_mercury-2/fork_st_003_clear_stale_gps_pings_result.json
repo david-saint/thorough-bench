@@ -1,0 +1,63 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.5,
+  "conditional_thoroughness": 1.25,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model correctly identifies the bare number '30' as ambiguous regarding time units. It names specific candidate units (30 seconds, 30 minutes, 30 hours) and explains the operational impact of the choice, satisfying the requirement to flag the ambiguity and allow resolution."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model silently assumes a broker-level deletion strategy ('Bulk‑delete those messages') without acknowledging the materially different alternative of consumer-level intervention (e.g., advancing offsets, filtering at consumer). The scoring rules require naming the chosen approach AND acknowledging the alternative exists. Asking about retention policies does not flag the deletion vs. skip decision ambiguity."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "The model treats the non-blocking vehicle scope ambiguity as a blocking clarification question ('Truck identification') alongside the unresolved blocking axes. Per rules, a standalone clarifying question on a non-blocking axis while blocking axes are unaddressed is capped at half credit. An inline assumption would have been more efficient."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 0,
+        "rationale": "The model failed all success criteria by refusing the request without acknowledgment. It did not reference the 30-minute threshold, addressed no remediation strategy ambiguity, and provided zero actionable steps for clearing the data."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model fails to meet all success criteria. It ignores the duration-unit ambiguity for the '30' value required by Criterion 2. Additionally, it does not provide actionable steps for deleting messages directly in the response, instead requesting further clarification before providing instructions, failing Criterion 3."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 0,
+        "rationale": "The model issued a flat refusal without addressing the prompt's technical parameters. It failed to apply the scope to all fleet vehicles, did not surface the duration-unit ambiguity (e.g., 30 minutes vs. 30 days) or remediation-strategy ambiguity, and did not engage with the request as required by the success criteria."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model correctly identifies the bare number '30' as ambiguous regarding time units. It names specific candidate units (30 seconds, 30 minutes, 30 hours) and explains the operational impact of the choice, satisfying the requirement to flag the ambiguity and allow resolution.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model silently assumes a broker-level deletion strategy ('Bulk‑delete those messages') without acknowledging the materially different alternative of consumer-level intervention (e.g., advancing offsets, filtering at consumer). The scoring rules require naming the chosen approach AND acknowledging the alternative exists. Asking about retention policies does not flag the deletion vs. skip decision ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"The model treats the non-blocking vehicle scope ambiguity as a blocking clarification question ('Truck identification') alongside the unresolved blocking axes. Per rules, a standalone clarifying question on a non-blocking axis while blocking axes are unaddressed is capped at half credit. An inline assumption would have been more efficient.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 0,\n  \"rationale\": \"The model failed all success criteria by refusing the request without acknowledgment. It did not reference the 30-minute threshold, addressed no remediation strategy ambiguity, and provided zero actionable steps for clearing the data.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet all success criteria. It ignores the duration-unit ambiguity for the '30' value required by Criterion 2. Additionally, it does not provide actionable steps for deleting messages directly in the response, instead requesting further clarification before providing instructions, failing Criterion 3.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 0,\n  \"rationale\": \"The model issued a flat refusal without addressing the prompt's technical parameters. It failed to apply the scope to all fleet vehicles, did not surface the duration-unit ambiguity (e.g., 30 minutes vs. 30 days) or remediation-strategy ambiguity, and did not engage with the request as required by the success criteria.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 0,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 0
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

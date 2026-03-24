@@ -53,6 +53,8 @@ def run_benchmark_locally(
     model_name: str = "unknown",
     judge_model: str = "",
     save_results: bool = True,
+    control_prompt_fn=None,
+    prompt_variant: str = "",
 ) -> list[TaskResult]:
     """Run the full MMCE benchmark locally (without Kaggle SDK).
 
@@ -78,9 +80,10 @@ def run_benchmark_locally(
 
         # Get control responses
         control_responses = {}
+        _control_fn = control_prompt_fn or prompt_fn
         for cp in task_def.control_prompts:
             print(f"  Control: {cp.control_prompt_id}")
-            control_responses[cp.control_prompt_id] = prompt_fn(cp.prompt)
+            control_responses[cp.control_prompt_id] = _control_fn(cp.prompt)
 
         # Judge
         judgments = judge_task(task_def, main_response, control_responses, judge_fn)
@@ -110,6 +113,7 @@ def run_benchmark_locally(
             tasks_evaluated=[r.task_id for r in results],
             composite_ct=composite["composite_ct"],
             composite_ac=composite["composite_ac"],
+            prompt_variant=prompt_variant,
         )
         save_run_meta(run_dir, meta)
         save_summary_csv(run_dir, results, tasks)

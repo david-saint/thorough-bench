@@ -47,7 +47,13 @@ def _build_leaderboard_df(data: DashboardData) -> pd.DataFrame:
     avg_ni.columns = ["run_id", "model", "avg_ni"]
 
     # Merge
-    lb = runs[["run_id", "model", "n_tasks", "composite_ct", "composite_ac"]].copy()
+    lb = runs[["run_id", "model", "n_tasks", "composite_ct", "composite_ac", "prompt_variant"]].copy() if "prompt_variant" in runs.columns else runs[["run_id", "model", "n_tasks", "composite_ct", "composite_ac"]].copy()
+    if "prompt_variant" not in lb.columns:
+        lb["prompt_variant"] = ""
+    lb["model"] = lb.apply(
+        lambda r: f"{r['model']} [agentic]" if r["prompt_variant"] == "agentic" else r["model"],
+        axis=1,
+    )
     lb = lb.merge(fork_stats, on=["run_id", "model"], how="left")
     lb = lb.merge(guardian_stats, on=["run_id", "model"], how="left")
     lb = lb.merge(avg_ni, on=["run_id", "model"], how="left")

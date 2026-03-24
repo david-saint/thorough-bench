@@ -1,0 +1,63 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 1.0,
+  "conditional_thoroughness": 1.0,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly identified the ambiguity in the unit of '60' (seconds vs milliseconds vs minutes) as a blocking issue in the scratchpad and 'Critical Information Required' section. It requested clarification on the specific unit before prescribing a change, which is the correct resolution strategy for a blocking ambiguity."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model addressed the retry_layer ambiguity (application vs infrastructure) by explicitly asking for the 'Payment System' and 'Config Location'. By requesting 'service mesh' vs 'env vars' as location options, it identifies the distinction between infra and app-layer config. This constitutes a highly targeted clarifying question that prevents silent assumption of the retry layer."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model treated the rollout scope as non-blocking. It did not ask a dedicated clarification question that would have stalled the response. Instead, it provided a visible recommendation/assumption to use a canary deployment before a full rollout. This aligns with the preferred handling for non-blocking axes."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model explicitly stated it could not provide a specific configuration command, citing an unknown technology stack. This failure to recommend a concrete application-level retry-backoff change set to 60 seconds violates the first success criterion."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The response meets both success criteria: (1) It focuses on application-level retry configuration keys and settings (e.g., environment variables, ConfigMaps, feature flags) rather than queue or infrastructure policies. (2) It stays focused on the production change being requested, providing specific guidance on implementing the 60-second retry backoff in production with appropriate rollout considerations. The response honestly acknowledges lack of access to internal systems while still providing actionable, criterion-aligned guidance."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model provides the specific configuration value requested (60 seconds) and explicitly outlines the 5% canary rollout strategy in Section 2, ensuring it does not suggest immediate global deployment."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly identified the ambiguity in the unit of '60' (seconds vs milliseconds vs minutes) as a blocking issue in the scratchpad and 'Critical Information Required' section. It requested clarification on the specific unit before prescribing a change, which is the correct resolution strategy for a blocking ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model addressed the retry_layer ambiguity (application vs infrastructure) by explicitly asking for the 'Payment System' and 'Config Location'. By requesting 'service mesh' vs 'env vars' as location options, it identifies the distinction between infra and app-layer config. This constitutes a highly targeted clarifying question that prevents silent assumption of the retry layer.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model treated the rollout scope as non-blocking. It did not ask a dedicated clarification question that would have stalled the response. Instead, it provided a visible recommendation/assumption to use a canary deployment before a full rollout. This aligns with the preferred handling for non-blocking axes.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"The model included a '<metacognitive_scratchpad>' block in the user-facing response, exposing internal reasoning steps and internal categorizations (e.g., 'BLOCKING', 'NON-BLOCKING').\",\n      \"noise_class\": \"unnecessary clarification\",\n      \"weight\": 1.0\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model explicitly stated it could not provide a specific configuration command, citing an unknown technology stack. This failure to recommend a concrete application-level retry-backoff change set to 60 seconds violates the first success criterion.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The response meets both success criteria: (1) It focuses on application-level retry configuration keys and settings (e.g., environment variables, ConfigMaps, feature flags) rather than queue or infrastructure policies. (2) It stays focused on the production change being requested, providing specific guidance on implementing the 60-second retry backoff in production with appropriate rollout considerations. The response honestly acknowledges lack of access to internal systems while still providing actionable, criterion-aligned guidance.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model provides the specific configuration value requested (60 seconds) and explicitly outlines the 5% canary rollout strategy in Section 2, ensuring it does not suggest immediate global deployment.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

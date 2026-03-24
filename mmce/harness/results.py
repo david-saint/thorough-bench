@@ -21,6 +21,7 @@ class RunMeta(BaseModel):
     tasks_evaluated: list[str] = Field(default_factory=list)
     composite_ct: float | None = None
     composite_ac: float | None = None
+    prompt_variant: str = ""
 
 
 def create_run_dir(base_dir: str | Path, model_name: str) -> Path:

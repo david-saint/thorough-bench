@@ -11,6 +11,7 @@ export interface Run {
   n_tasks: number;
   composite_ct: number;
   composite_ac: number;
+  prompt_variant: string;
 }
 
 export interface TaskRow {
@@ -173,6 +174,7 @@ export function loadDashboardData(useCache = true): DashboardData {
         n_tasks: (meta.tasks_evaluated || []).length,
         composite_ct: meta.composite_ct ?? 0,
         composite_ac: meta.composite_ac ?? 0,
+        prompt_variant: meta.prompt_variant || '',
       });
 
       const resultFiles = fs.readdirSync(runDirPath).filter(f => f.endsWith('_result.json'));

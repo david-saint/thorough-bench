@@ -10,6 +10,7 @@ interface LeaderboardViewProps {
 
 interface LeaderboardRow {
   model: string;
+  promptVariant: string;
   overallScore: number;
   compositeCt: number;
   compositeAc: number;
@@ -47,6 +48,7 @@ export default function LeaderboardView({ data }: LeaderboardViewProps) {
 
       return {
         model: run.model,
+        promptVariant: run.prompt_variant,
         overallScore: run.composite_ct,
         compositeCt: run.composite_ct,
         compositeAc: run.composite_ac,
@@ -80,7 +82,21 @@ export default function LeaderboardView({ data }: LeaderboardViewProps) {
   };
 
   const leaderboardColumns: Column<LeaderboardRow>[] = [
-    { key: 'model', label: 'Model', className: 'font-semibold text-ink' },
+    {
+      key: 'model',
+      label: 'Model',
+      className: 'font-semibold text-ink',
+      render: (r) => (
+        <div className="flex items-center gap-2">
+          <span>{r.model}</span>
+          {r.promptVariant === 'agentic' && (
+            <span className="text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">
+              agentic
+            </span>
+          )}
+        </div>
+      ),
+    },
     {
       key: 'overallScore',
       label: 'Overall Score',

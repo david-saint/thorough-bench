@@ -1,0 +1,63 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.8,
+  "conditional_thoroughness": 1.3333333333333333,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model correctly identifies the ambiguous unit ('30') in the blocking 'Critical Questions' table, explicitly listing candidate units (seconds, minutes, hours). This makes the ambiguity visible with a valid targeted resolution strategy (asking for clarification on the units), satisfying the axis requirement."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "The model acknowledges the root cause issue ('Backlog suggests consumer lag... deletion treats symptom') and suggests 'Scale consumers' as an alternative to fixing the backlog. However, it commits to providing a 'deletion command' without explicitly naming the specific technical alternative of 'Consumer Offset Skipping' versus 'Broker-Level Deletion'. This is a partial acknowledgement of the strategy ambiguity but not a clear distinction, earning partial credit."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The vehicle scope axis is non-blocking (blocking: False). The model correctly prioritizes the blocking axes and does not make vehicle scope a standalone blocker. It implicitly acknowledges the mixed fleet context in the scratchpad without derailing the high-priority clarifications. No penalty is incurred for not explicitly assuming a scope given it is non-blocking and higher priorities were addressed."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The model correctly uses the 30-minute threshold in its SQL query without modification. It addresses the remediation-strategy ambiguity by explicitly distinguishing between purging the topic (broker-level delete) and resetting consumer offsets (consumer-level skip), warning about data loss in each scenario. It provides actionable high-level steps for both database cleanup and queue management tailored to the 30-minute requirement."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The response meets criteria 1 (broker deletion strategy) and 3 (actionable steps with platform dependency), but fails criteria 2. While it assumes '30 minutes' in its examples, it does not explicitly surface the duration-unit ambiguity for the bare value '30' or list specific candidate units (e.g., minutes vs. hours vs. days) as required."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The model response meets all success criteria. It applies the cleanup scope to the entire fleet using generic table names without restricting by vehicle class (trucks vs vans), satisfying criteria 1 and 3. Furthermore, it explicitly surfaces the duration-unit ambiguity in the 'Verify the count' section, stating the assumption ('30 minutes') while noting the alternative ('30 days') and how to adjust, satisfying criterion 2."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model correctly identifies the ambiguous unit ('30') in the blocking 'Critical Questions' table, explicitly listing candidate units (seconds, minutes, hours). This makes the ambiguity visible with a valid targeted resolution strategy (asking for clarification on the units), satisfying the axis requirement.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"The model acknowledges the root cause issue ('Backlog suggests consumer lag... deletion treats symptom') and suggests 'Scale consumers' as an alternative to fixing the backlog. However, it commits to providing a 'deletion command' without explicitly naming the specific technical alternative of 'Consumer Offset Skipping' versus 'Broker-Level Deletion'. This is a partial acknowledgement of the strategy ambiguity but not a clear distinction, earning partial credit.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The vehicle scope axis is non-blocking (blocking: False). The model correctly prioritizes the blocking axes and does not make vehicle scope a standalone blocker. It implicitly acknowledges the mixed fleet context in the scratchpad without derailing the high-priority clarifications. No penalty is incurred for not explicitly assuming a scope given it is non-blocking and higher priorities were addressed.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly uses the 30-minute threshold in its SQL query without modification. It addresses the remediation-strategy ambiguity by explicitly distinguishing between purging the topic (broker-level delete) and resetting consumer offsets (consumer-level skip), warning about data loss in each scenario. It provides actionable high-level steps for both database cleanup and queue management tailored to the 30-minute requirement.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The response meets criteria 1 (broker deletion strategy) and 3 (actionable steps with platform dependency), but fails criteria 2. While it assumes '30 minutes' in its examples, it does not explicitly surface the duration-unit ambiguity for the bare value '30' or list specific candidate units (e.g., minutes vs. hours vs. days) as required.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria. It applies the cleanup scope to the entire fleet using generic table names without restricting by vehicle class (trucks vs vans), satisfying criteria 1 and 3. Furthermore, it explicitly surfaces the duration-unit ambiguity in the 'Verify the count' section, stating the assumption ('30 minutes') while noting the alternative ('30 days') and how to adjust, satisfying criterion 2.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 0,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

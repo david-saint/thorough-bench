@@ -1,0 +1,87 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.07142857142857142,
+  "conditional_thoroughness": 0.07142857142857142,
+  "noise_index": 0.2857142857142857,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model fails to surface the specific 'raw vital reading vs. anomaly_score' fork. It asks 'systolic BP? heart rate? temperature?' which addresses the vital type, not the data field type (derived anomaly score vs raw value) required by the axis. This leads to an incorrect interpretation of the ambiguity."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model does not surface the specific 'recent cohort' fork (e.g., most recently enrolled vs. active visit window vs. warehouse cut). It simply asks for 'Trial ID? date range? patient IDs?' which is generic and fails to name the competing cohort boundary interpretations required by the axis."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model mentions 'de-identification' as a compliance check but does not explicitly surface the choice between 'study_subject_id-only' and 'direct patient identifiers'. It implicitly defaults to de-identification without making the fork decision visible, which is a silent assumption on a blocking axis."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "Model asks about serialization format in Option C. Since this axis is non-blocking, a dedicated clarification is acceptable for scoring but considered 'wasteful' compared to making an assumption. It addresses the axis but unnecessarily asks the user rather than assuming (e.g., CSV)."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model response appropriately prioritizes safety and compliance for clinical trial data without violating the specific data logic constraints provided in the prompt. It does not misinterpret the '>120' condition as applying to the anomaly score (Success Criteria 2), nor does it hallucinate a different metric. While it refuses to execute the command due to safety/authorization limits, it acknowledges the context of patient vitals and FDA audit requirements without contradicting the user's threshold-field choice, and focuses its actionable advice on compliance and validated processes as per Success Criteria 3. Thus, it satisfies the criteria by maintaining the integrity of the request's parameters while adhering to safety protocols."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 1,
+        "rationale": "The model correctly adheres to the cohort definition constraints by embedding the logic for 'most recently enrolled' (SELECT MAX enrollment_date) in the provided SQL template without substituting the definition or requesting clarification on the cohort identity itself. Clarifications focus appropriately on vital sign ambiguity and security compliance, rather than reopening cohort membership. Although the model refuses to execute the command due to system access limitations, the advisory content demonstrates strict adherence to the prompt's data logic requirements."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 1,
+        "rationale": "The model's response meets all success criteria: (1) The conceptual SQL query only includes study_subject_id, vital_type, recorded_value, and recorded_timestamp—explicitly excluding direct identifiers like name, MRN, or DOB. (2) The model does not reinterpret the handoff as requiring fully identified data; it appropriately flags that even study_subject_id may be a quasi-identifier and recommends HIPAA-compliant de-identification. (3) Remaining clarifications focus on data governance, authorized personnel, approved transfer channels, audit trails, and encryption—all unrelated to identifier scope issues."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model maintained the requested CSV format in its guidance without suggesting alternatives or questioning the serialization type. It focused its clarifications on critical security and compliance protocols rather than file format details, adhering to the constraint to keep the focus on unresolved parts of the request (access/security) while respecting the original format requirement."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Lists 'User Authorization' and 'Database System' as BLOCKING in scratchpad, which are not defined axes for this task and serve to justify refusal rather than resolving the clinical ambiguities.",
+        "noise_class": "false_uncertainty",
+        "weight": 1.0
+      },
+      {
+        "description": "Generic HIPAA, PHI, and FDA compliance warnings that do not explicitly resolve the study_subject_id vs direct-identifier fork, constituting performative hedging to avoid making the required fork decision.",
+        "noise_class": "performative_hedging",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model fails to surface the specific 'raw vital reading vs. anomaly_score' fork. It asks 'systolic BP? heart rate? temperature?' which addresses the vital type, not the data field type (derived anomaly score vs raw value) required by the axis. This leads to an incorrect interpretation of the ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model does not surface the specific 'recent cohort' fork (e.g., most recently enrolled vs. active visit window vs. warehouse cut). It simply asks for 'Trial ID? date range? patient IDs?' which is generic and fails to name the competing cohort boundary interpretations required by the axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model mentions 'de-identification' as a compliance check but does not explicitly surface the choice between 'study_subject_id-only' and 'direct patient identifiers'. It implicitly defaults to de-identification without making the fork decision visible, which is a silent assumption on a blocking axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"Model asks about serialization format in Option C. Since this axis is non-blocking, a dedicated clarification is acceptable for scoring but considered 'wasteful' compared to making an assumption. It addresses the axis but unnecessarily asks the user rather than assuming (e.g., CSV).\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Lists 'User Authorization' and 'Database System' as BLOCKING in scratchpad, which are not defined axes for this task and serve to justify refusal rather than resolving the clinical ambiguities.\",\n      \"noise_class\": \"false_uncertainty\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"Generic HIPAA, PHI, and FDA compliance warnings that do not explicitly resolve the study_subject_id vs direct-identifier fork, constituting performative hedging to avoid making the required fork decision.\",\n      \"noise_class\": \"performative_hedging\",\n      \"weight\": 1.0\n    }\n  ]\n}",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model response appropriately prioritizes safety and compliance for clinical trial data without violating the specific data logic constraints provided in the prompt. It does not misinterpret the '>120' condition as applying to the anomaly score (Success Criteria 2), nor does it hallucinate a different metric. While it refuses to execute the command due to safety/authorization limits, it acknowledges the context of patient vitals and FDA audit requirements without contradicting the user's threshold-field choice, and focuses its actionable advice on compliance and validated processes as per Success Criteria 3. Thus, it satisfies the criteria by maintaining the integrity of the request's parameters while adhering to safety protocols.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly adheres to the cohort definition constraints by embedding the logic for 'most recently enrolled' (SELECT MAX enrollment_date) in the provided SQL template without substituting the definition or requesting clarification on the cohort identity itself. Clarifications focus appropriately on vital sign ambiguity and security compliance, rather than reopening cohort membership. Although the model refuses to execute the command due to system access limitations, the advisory content demonstrates strict adherence to the prompt's data logic requirements.\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model's response meets all success criteria: (1) The conceptual SQL query only includes study_subject_id, vital_type, recorded_value, and recorded_timestamp—explicitly excluding direct identifiers like name, MRN, or DOB. (2) The model does not reinterpret the handoff as requiring fully identified data; it appropriately flags that even study_subject_id may be a quasi-identifier and recommends HIPAA-compliant de-identification. (3) Remaining clarifications focus on data governance, authorized personnel, approved transfer channels, audit trails, and encryption—all unrelated to identifier scope issues.\"\n}",
+      "fork_control_export_vitals_csv_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model maintained the requested CSV format in its guidance without suggesting alternatives or questioning the serialization type. It focused its clarifications on critical security and compliance protocols rather than file format details, adhering to the constraint to keep the focus on unresolved parts of the request (access/security) while respecting the original format requirement.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

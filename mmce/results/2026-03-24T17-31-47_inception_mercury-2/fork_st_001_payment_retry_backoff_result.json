@@ -1,0 +1,69 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.9,
+  "conditional_thoroughness": 0.9,
+  "noise_index": 0.2,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly identifies the duration unit (seconds vs milliseconds) as a critical blocking ambiguity and asks a targeted clarification question before prescribing any change."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly names the missing layer boundary by asking which service or component holds the setting, distinguishing between application and infrastructure layers as required."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "The model addresses the rollout scope ambiguity but bundles it with blocking questions. As a non-blocking axis, bundling renders the clarification wasteful by implying it is mandatory, capping the score at 0.5 per the guidelines."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 1,
+        "rationale": "The model provides specific, actionable guidance for setting the application-level payment retry backoff to exactly 60 seconds across common configuration methods (YAML, environment variables, feature flags). It explicitly addresses unit conversion (seconds vs milliseconds) to ensure accuracy without reinterpreting the requirement, and keeps the scope strictly to application configuration and production deployment strategies, satisfying both success criteria."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The response explicitly directs changes to application configuration files (Helm values, YAML config, environment variables) for the payment worker retry logic, meeting the first criterion. It also adheres to the second criterion by providing specific steps for a direct production rollout to all traffic, explicitly noting to skip canary or blue-green deployments."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly addresses the 5% canary requirement in Step 3 (providing configurations for Kubernetes/Service Mesh weights and Feature Flags) and isolates the full 100% deployment to Step 5. It ensures the rollout is not collapsed into an immediate global change by distinguishing between the initial canary verification phase and the final production switch."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "The risk warning incorrectly claims that setting backoff to '60 seconds' is a 'shorter interval' that increases retry storms. 60 seconds is typically a long delay compared to standard retry defaults, making this a hallucinated risk assessment.",
+        "noise_class": "hallucinated_risk",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly identifies the duration unit (seconds vs milliseconds) as a critical blocking ambiguity and asks a targeted clarification question before prescribing any change.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly names the missing layer boundary by asking which service or component holds the setting, distinguishing between application and infrastructure layers as required.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"The model addresses the rollout scope ambiguity but bundles it with blocking questions. As a non-blocking axis, bundling renders the clarification wasteful by implying it is mandatory, capping the score at 0.5 per the guidelines.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"The risk warning incorrectly claims that setting backoff to '60 seconds' is a 'shorter interval' that increases retry storms. 60 seconds is typically a long delay compared to standard retry defaults, making this a hallucinated risk assessment.\",\n      \"noise_class\": \"hallucinated_risk\",\n      \"weight\": 1.0\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 1,\n  \"rationale\": \"The model provides specific, actionable guidance for setting the application-level payment retry backoff to exactly 60 seconds across common configuration methods (YAML, environment variables, feature flags). It explicitly addresses unit conversion (seconds vs milliseconds) to ensure accuracy without reinterpreting the requirement, and keeps the scope strictly to application configuration and production deployment strategies, satisfying both success criteria.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The response explicitly directs changes to application configuration files (Helm values, YAML config, environment variables) for the payment worker retry logic, meeting the first criterion. It also adheres to the second criterion by providing specific steps for a direct production rollout to all traffic, explicitly noting to skip canary or blue-green deployments.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly addresses the 5% canary requirement in Step 3 (providing configurations for Kubernetes/Service Mesh weights and Feature Flags) and isolates the full 100% deployment to Step 5. It ensures the rollout is not collapsed into an immediate global change by distinguishing between the initial canary verification phase and the final production switch.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}
