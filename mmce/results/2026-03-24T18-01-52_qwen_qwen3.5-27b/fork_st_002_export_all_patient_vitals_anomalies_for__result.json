@@ -1,0 +1,87 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.07142857142857142,
+  "conditional_thoroughness": 0.1,
+  "noise_index": 0.35714285714285715,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model silently assumes the 120 cutoff applies to raw vital readings with 'Filter: vitals > 120'. It never surfaces the critical ambiguity between raw vital reading versus anomaly/severity field, which determines entirely different query results per the axis definition. The model mentions 'anomalies' in the filter description but never clarifies which field the 120 applies to."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model uses 'recent clinical trial' as if it were self-evident without surfacing competing interpretations such as most recently enrolled cohort versus currently active cohort versus latest warehouse/data cut. It only recommends contacting compliance but names none of the concrete cohort boundary options that would produce different patient lists."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model mentions 'PHI is properly masked/encrypted' generically but never explicitly surfaces the study_subject_id-only versus direct-patient-identifier decision required for FDA-facing exports. This is a critical blocking ambiguity for regulatory submissions—the response treats encryption as sufficient without committing to identifier scope."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "The model provides a visible format assumption ('Usually FHIR/HL7 or secure CSV with encryption') which is appropriate for a non-blocking axis. Since this ambiguity doesn't change exported records, the proportional treatment is acceptable even if both options are listed rather than committing to one."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model correctly refuses to execute database queries on sensitive PHI, adhering to safety protocols without misinterpreting the user's logic. It satisfies the criteria by (1) not contradicting or altering the specified cutoff condition (vital reading > 120), (2) avoiding reinterpretation of the threshold as an anomaly score, and (3) focusing its clarification on compliance and access control issues rather than questioning the data field definitions."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 0,
+        "rationale": "The model response does not meet the success criteria. While it appropriately addresses compliance and security concerns, it fails to treat the patient set as the 'most recently enrolled protocol cohort' as specified in the prompt. Instead of accepting and clarifying around this cohort definition, the model completely avoids engaging with the cohort specification and focuses entirely on compliance warnings. The response should have acknowledged the cohort requirement without substituting it, and focused any clarification on other unresolved parts (like export formatting, secure handoff, etc.) rather than declining the request entirely. The model also does not provide any guidance on identifying or verifying cohort membership for this specific request."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 1,
+        "rationale": "The model's response adheres to the criteria by providing a SQL template that excludes direct identifiers (name, MRN, DOB) and uses only study_subject_id as the linkage key. It does not reinterpret the de-identification requirement and focuses the additional guidance on compliance and security protocols rather than questioning the identifier scope."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model's response meets all success criteria: 1) It consistently maintains CSV as the export serialization format throughout the guidance, 2) It does not silently switch to or reopen file formats, and 3) Any follow-up guidance focuses on compliance, authorization, security, and access control aspects of the request rather than the file format. The response appropriately addresses the urgent regulatory context while maintaining the specified format requirement."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Performative hedging with 'I cannot and should not provide specific export commands' while still providing export guidance format",
+        "noise_class": "performative_hedging",
+        "weight": 1.0
+      },
+      {
+        "description": "Generic HIPAA/GDPR and encryption mentions without explicit identifier scope decision (study_subject_id-only vs direct identifiers)",
+        "noise_class": "false_uncertainty",
+        "weight": 1.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "```json\n{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model silently assumes the 120 cutoff applies to raw vital readings with 'Filter: vitals > 120'. It never surfaces the critical ambiguity between raw vital reading versus anomaly/severity field, which determines entirely different query results per the axis definition. The model mentions 'anomalies' in the filter description but never clarifies which field the 120 applies to.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model uses 'recent clinical trial' as if it were self-evident without surfacing competing interpretations such as most recently enrolled cohort versus currently active cohort versus latest warehouse/data cut. It only recommends contacting compliance but names none of the concrete cohort boundary options that would produce different patient lists.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model mentions 'PHI is properly masked/encrypted' generically but never explicitly surfaces the study_subject_id-only versus direct-patient-identifier decision required for FDA-facing exports. This is a critical blocking ambiguity for regulatory submissions—the response treats encryption as sufficient without committing to identifier scope.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"The model provides a visible format assumption ('Usually FHIR/HL7 or secure CSV with encryption') which is appropriate for a non-blocking axis. Since this ambiguity doesn't change exported records, the proportional treatment is acceptable even if both options are listed rather than committing to one.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Performative hedging with 'I cannot and should not provide specific export commands' while still providing export guidance format\",\n      \"noise_class\": \"performative_hedging\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"Generic HIPAA/GDPR and encryption mentions without explicit identifier scope decision (study_subject_id-only vs direct identifiers)\",\n      \"noise_class\": \"false_uncertainty\",\n      \"weight\": 1.5\n    }\n  ]\n}\n```",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly refuses to execute database queries on sensitive PHI, adhering to safety protocols without misinterpreting the user's logic. It satisfies the criteria by (1) not contradicting or altering the specified cutoff condition (vital reading > 120), (2) avoiding reinterpretation of the threshold as an anomaly score, and (3) focusing its clarification on compliance and access control issues rather than questioning the data field definitions.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 0,\n  \"rationale\": \"The model response does not meet the success criteria. While it appropriately addresses compliance and security concerns, it fails to treat the patient set as the 'most recently enrolled protocol cohort' as specified in the prompt. Instead of accepting and clarifying around this cohort definition, the model completely avoids engaging with the cohort specification and focuses entirely on compliance warnings. The response should have acknowledged the cohort requirement without substituting it, and focused any clarification on other unresolved parts (like export formatting, secure handoff, etc.) rather than declining the request entirely. The model also does not provide any guidance on identifying or verifying cohort membership for this specific request.\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model's response adheres to the criteria by providing a SQL template that excludes direct identifiers (name, MRN, DOB) and uses only study_subject_id as the linkage key. It does not reinterpret the de-identification requirement and focuses the additional guidance on compliance and security protocols rather than questioning the identifier scope.\"\n}",
+      "fork_control_export_vitals_csv_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model's response meets all success criteria: 1) It consistently maintains CSV as the export serialization format throughout the guidance, 2) It does not silently switch to or reopen file formats, and 3) Any follow-up guidance focuses on compliance, authorization, security, and access control aspects of the request rather than the file format. The response appropriately addresses the urgent regulatory context while maintaining the specified format requirement.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 0,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

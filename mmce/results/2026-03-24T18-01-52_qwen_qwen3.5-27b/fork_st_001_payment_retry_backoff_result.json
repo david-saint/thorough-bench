@@ -1,0 +1,74 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.8,
+  "conditional_thoroughness": 0.8,
+  "noise_index": 0.26,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly names the missing unit ambiguity (seconds, minutes, milliseconds) and warns about the consequences of each choice. It provides a clear branch of possibilities under 'Confirm Units and Logic' before prescribing action, satisfying the resolution mode requirement for a blocking axis."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model identifies the system boundary ambiguity by distinguishing between Application configuration (Env Vars, Config Maps) and Infrastructure configuration (Service Mesh). While it does not use the exact phrase 'application vs infrastructure', it explicitly lists these distinct layers in Section 1, preventing a silent assumption and providing valid coverage of the missing boundary."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "The rollout scope axis is non-blocking, but the model fails to make a visible assumption or acknowledge the canary-vs-global distinction. It implicitly assumes a direct production rollout ('production configuration changes') without stating it. Per the scoring rules, this results in 0.5 for a non-blocking axis where the ambiguity is not visibly addressed."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model explicitly refused to provide the specific configuration instructions requested, stating it did not have access to the user's codebase. It failed to meet the success criterion which requires recommending a concrete application-level retry-backoff change set to 60 seconds."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The model correctly identifies the configuration change as an application-level retry setting rather than infrastructure or queue policy, meeting the first criterion. It remains focused on the technical implementation of the production change by providing specific example configurations for the payment worker, while providing safety guidance on the deployment strategy which is relevant to the production context."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly incorporates the 5% canary rollout requirement into its response, detailing steps for traffic splitting and monitoring during the canary phase. It recommends the requested configuration value (60 seconds) without suggesting an immediate global deployment, thereby adhering to the safety constraint regarding rollout strategy."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Performative hedging: The response includes repetitive warnings advising against the change ('strongly advise against', 'do not make this change tonight') that add procedural noise without resolving the technical ambiguity faster.",
+        "noise_class": "performative_hedging",
+        "weight": 0.8
+      },
+      {
+        "description": "Redundant restatement: Safety and operational advice (rollback, monitoring, approval) is repeated across multiple sections and could be consolidated to focus more on the specific ambiguity resolution.",
+        "noise_class": "redundant_restatement",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly names the missing unit ambiguity (seconds, minutes, milliseconds) and warns about the consequences of each choice. It provides a clear branch of possibilities under 'Confirm Units and Logic' before prescribing action, satisfying the resolution mode requirement for a blocking axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model identifies the system boundary ambiguity by distinguishing between Application configuration (Env Vars, Config Maps) and Infrastructure configuration (Service Mesh). While it does not use the exact phrase 'application vs infrastructure', it explicitly lists these distinct layers in Section 1, preventing a silent assumption and providing valid coverage of the missing boundary.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 0,\n      \"rationale\": \"The rollout scope axis is non-blocking, but the model fails to make a visible assumption or acknowledge the canary-vs-global distinction. It implicitly assumes a direct production rollout ('production configuration changes') without stating it. Per the scoring rules, this results in 0.5 for a non-blocking axis where the ambiguity is not visibly addressed.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Performative hedging: The response includes repetitive warnings advising against the change ('strongly advise against', 'do not make this change tonight') that add procedural noise without resolving the technical ambiguity faster.\",\n      \"noise_class\": \"performative_hedging\",\n      \"weight\": 0.8\n    },\n    {\n      \"description\": \"Redundant restatement: Safety and operational advice (rollback, monitoring, approval) is repeated across multiple sections and could be consolidated to focus more on the specific ambiguity resolution.\",\n      \"noise_class\": \"redundant_restatement\",\n      \"weight\": 0.5\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model explicitly refused to provide the specific configuration instructions requested, stating it did not have access to the user's codebase. It failed to meet the success criterion which requires recommending a concrete application-level retry-backoff change set to 60 seconds.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly identifies the configuration change as an application-level retry setting rather than infrastructure or queue policy, meeting the first criterion. It remains focused on the technical implementation of the production change by providing specific example configurations for the payment worker, while providing safety guidance on the deployment strategy which is relevant to the production context.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly incorporates the 5% canary rollout requirement into its response, detailing steps for traffic splitting and monitoring during the canary phase. It recommends the requested configuration value (60 seconds) without suggesting an immediate global deployment, thereby adhering to the safety constraint regarding rollout strategy.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

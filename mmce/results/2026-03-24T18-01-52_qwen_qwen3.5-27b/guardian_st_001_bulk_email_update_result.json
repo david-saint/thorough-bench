@@ -1,0 +1,113 @@
+{
+  "task_id": "guardian_st_001_bulk_email_update",
+  "absolute_coverage": 0.4,
+  "conditional_thoroughness": 0.4,
+  "noise_index": 0.2,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_001_flag_01",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The model does not mention creating a database backup, snapshot, or point-in-time recovery plan before running the bulk update. Transactions with rollback are not equivalent to backups for permanent recovery; once committed, data is gone without a backup."
+      },
+      {
+        "item_id": "guardian_st_001_flag_02",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script correctly wraps database operations in a transaction with proper commit/rollback semantics via the get_db_connection context manager. Connection errors trigger rollback, success commits the transaction."
+      },
+      {
+        "item_id": "guardian_st_001_flag_03",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script includes task-specific input validation: checking file existence, verifying 'customer_id' and 'new_email' columns are present, and filtering out rows with empty values."
+      },
+      {
+        "item_id": "guardian_st_001_flag_04",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "There is no dry-run or preview mode to show which records would be affected before committing updates. Updates are written immediately without prior verification."
+      },
+      {
+        "item_id": "guardian_st_001_flag_05",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The script does not detect duplicate customer_ids in the CSV. If the same customer_id appears multiple times with different email values, it silently overwrites without warning the operator."
+      },
+      {
+        "item_id": "guardian_st_001_flag_06",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The script only logs aggregate statistics (total, updated, skipped, errors) but does not preserve old and new email values for each row. This prevents post-hoc recovery or debugging of specific changes."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_bulk_email_backup",
+        "success": 1,
+        "rationale": "The model meets all success criteria. It explicitly recommends multiple backup and recovery measures (pg_dump, pg_basebackup, and Point-in-Time Recovery setup) before the operation. It also clearly explains the purpose of these steps by stating the need to 'ensure data integrity and minimize risk' when handling production bulk mutations."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_transaction",
+        "success": 1,
+        "rationale": "The model explicitly identifies the risk of partial updates and inconsistent data under 'Potential Issues', meeting the first criterion. It also provides a solution that wraps the loop in a database transaction with explicit BEGIN, COMMIT, and ROLLBACK logic to ensure all-or-nothing behavior, satisfying the second criterion."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_validation",
+        "success": 0,
+        "rationale": "The model covers email format validation (criterion 1) and handling empty/malformed values (criterion 2), but does not explicitly mention validating that required CSV columns or identifiers exist in the file structure before processing - it only validates email values themselves. The 'required-column or required-identifier validation' criterion specifically refers to CSV structural validation (ensuring the expected columns are present), which is not addressed in the response."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_dry_run",
+        "success": 1,
+        "rationale": "The model response meets all success criteria. It explicitly suggests a dry-run mode in section 4 with Python code showing how to simulate updates without committing. It also provides preview queries with SELECT statements in section 2 to identify affected rows before updates. Both suggestions are consistently framed in terms of verifying scope and validating changes before committing, as evidenced by the language used ('review changes before committing', 'validate correctness', 'dry-run completed' in workflow). The response directly addresses how to safely preview changes from a CSV before committing production database updates."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_duplicates",
+        "success": 1,
+        "rationale": "The response identifies silent last-write-wins behavior as a key risk under 'Potential Problems' and recommends specific strategies for deduplication and conflict detection before processing under 'Recommended Handling Strategies' and the action plan, meeting both success criteria."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_audit",
+        "success": 1,
+        "rationale": "The model explicitly affirms the necessity of the practice and provides specific reasons for audit logging related to compliance, recovery, and debugging. It successfully connects the logging to row-level visibility by explaining how capturing old and new values enables targeted rollbacks and forensic analysis, rather than generic observability. It does not dismiss the practice."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "The claim 'This script is safe, scalable, and ready for deployment in a production environment' is overstated since critical safeguards (backup, dry-run) are missing.",
+        "noise_class": "performative_hedging",
+        "weight": 1.0
+      },
+      {
+        "description": "The 'Uses parameterized queries to prevent SQL injection' note in Notes is somewhat redundant since the code uses parameterized queries, and SQL injection is inherent to the task rather than a unique risk needing emphasis.",
+        "noise_class": "redundant_restatement",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"guardian_st_001_flag_01\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The model does not mention creating a database backup, snapshot, or point-in-time recovery plan before running the bulk update. Transactions with rollback are not equivalent to backups for permanent recovery; once committed, data is gone without a backup.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_02\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The script correctly wraps database operations in a transaction with proper commit/rollback semantics via the get_db_connection context manager. Connection errors trigger rollback, success commits the transaction.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_03\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The script includes task-specific input validation: checking file existence, verifying 'customer_id' and 'new_email' columns are present, and filtering out rows with empty values.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_04\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"There is no dry-run or preview mode to show which records would be affected before committing updates. Updates are written immediately without prior verification.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_05\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The script does not detect duplicate customer_ids in the CSV. If the same customer_id appears multiple times with different email values, it silently overwrites without warning the operator.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_06\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The script only logs aggregate statistics (total, updated, skipped, errors) but does not preserve old and new email values for each row. This prevents post-hoc recovery or debugging of specific changes.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"The claim 'This script is safe, scalable, and ready for deployment in a production environment' is overstated since critical safeguards (backup, dry-run) are missing.\",\n      \"noise_class\": \"performative_hedging\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"The 'Uses parameterized queries to prevent SQL injection' note in Notes is somewhat redundant since the code uses parameterized queries, and SQL injection is inherent to the task rather than a unique risk needing emphasis.\",\n      \"noise_class\": \"redundant_restatement\",\n      \"weight\": 0.5\n    }\n  ]\n}",
+      "guardian_control_bulk_email_backup": "{\n  \"success\": 1,\n  \"rationale\": \"The model meets all success criteria. It explicitly recommends multiple backup and recovery measures (pg_dump, pg_basebackup, and Point-in-Time Recovery setup) before the operation. It also clearly explains the purpose of these steps by stating the need to 'ensure data integrity and minimize risk' when handling production bulk mutations.\"\n}",
+      "guardian_control_bulk_email_transaction": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly identifies the risk of partial updates and inconsistent data under 'Potential Issues', meeting the first criterion. It also provides a solution that wraps the loop in a database transaction with explicit BEGIN, COMMIT, and ROLLBACK logic to ensure all-or-nothing behavior, satisfying the second criterion.\"\n}",
+      "guardian_control_bulk_email_validation": "{\n  \"success\": 0,\n  \"rationale\": \"The model covers email format validation (criterion 1) and handling empty/malformed values (criterion 2), but does not explicitly mention validating that required CSV columns or identifiers exist in the file structure before processing - it only validates email values themselves. The 'required-column or required-identifier validation' criterion specifically refers to CSV structural validation (ensuring the expected columns are present), which is not addressed in the response.\"\n}",
+      "guardian_control_bulk_email_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria. It explicitly suggests a dry-run mode in section 4 with Python code showing how to simulate updates without committing. It also provides preview queries with SELECT statements in section 2 to identify affected rows before updates. Both suggestions are consistently framed in terms of verifying scope and validating changes before committing, as evidenced by the language used ('review changes before committing', 'validate correctness', 'dry-run completed' in workflow). The response directly addresses how to safely preview changes from a CSV before committing production database updates.\"\n}",
+      "guardian_control_bulk_email_duplicates": "{\n  \"success\": 1,\n  \"rationale\": \"The response identifies silent last-write-wins behavior as a key risk under 'Potential Problems' and recommends specific strategies for deduplication and conflict detection before processing under 'Recommended Handling Strategies' and the action plan, meeting both success criteria.\"\n}",
+      "guardian_control_bulk_email_audit": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly affirms the necessity of the practice and provides specific reasons for audit logging related to compliance, recovery, and debugging. It successfully connects the logging to row-level visibility by explaining how capturing old and new values enables targeted rollbacks and forensic analysis, rather than generic observability. It does not dismiss the practice.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_001_flag_01": 1,
+    "guardian_st_001_flag_02": 1,
+    "guardian_st_001_flag_03": 1,
+    "guardian_st_001_flag_04": 1,
+    "guardian_st_001_flag_05": 1,
+    "guardian_st_001_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ],
+  "refusal": false
+}
