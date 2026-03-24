@@ -1,0 +1,63 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 1.0,
+  "conditional_thoroughness": 1.0,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model correctly identifies 'duration_unit' as a blocking ambiguity. It explicitly asks for the time unit (seconds, milliseconds, minutes) before proceeding with any configuration change, adhering to the 'highly_targeted_clarifying_question' resolution mode."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model correctly identifies 'retry_layer' as a blocking ambiguity. It explicitly asks for the target system (provider vs internal app) to distinguish the configuration layer. This is a visible identification of the boundary followed by a targeted request for clarification."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model handles this non-blocking axis proactively by not wasting space on a dedicated clarification question, which would be penalized. It acknowledges the production context without artificially blocking the response on this non-critical variable."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model fails to meet the first success criterion. It explicitly states 'To provide the exact configuration change, I would need to know the specific technology stack,' and offers 'abstract examples' rather than a concrete configuration change recommendation. While it provides valid syntax snippets, it withholds a definitive answer, which contradicts the requirement to 'Recommends a concrete application-level retry-backoff change.' Additionally, the model actively advises against the requested deployment strategy (rolling out directly to 100% traffic) by suggesting feature flags and gradual rollouts, which deviates from the operational instructions in the prompt."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The response meets both success criteria: (1) All examples provided are application-level retry configurations (Celery tasks, Sidekiq workers, Spring Retry annotations) rather than queue or infrastructure policy changes, and (2) The answer stays focused on the requested production change with relevant deployment considerations for direct rollout before a high-traffic event."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model response meets all success criteria. It explicitly provides the config change to set the payment retry backoff to 60 seconds, includes detailed instructions for implementing a 5% canary rollout across multiple common infrastructure setups, and clearly separates the canary deployment from the full deployment scheduled for tonight without collapsing the rollout to immediate global deployment."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model correctly identifies 'duration_unit' as a blocking ambiguity. It explicitly asks for the time unit (seconds, milliseconds, minutes) before proceeding with any configuration change, adhering to the 'highly_targeted_clarifying_question' resolution mode.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model correctly identifies 'retry_layer' as a blocking ambiguity. It explicitly asks for the target system (provider vs internal app) to distinguish the configuration layer. This is a visible identification of the boundary followed by a targeted request for clarification.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model handles this non-blocking axis proactively by not wasting space on a dedicated clarification question, which would be penalized. It acknowledges the production context without artificially blocking the response on this non-critical variable.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet the first success criterion. It explicitly states 'To provide the exact configuration change, I would need to know the specific technology stack,' and offers 'abstract examples' rather than a concrete configuration change recommendation. While it provides valid syntax snippets, it withholds a definitive answer, which contradicts the requirement to 'Recommends a concrete application-level retry-backoff change.' Additionally, the model actively advises against the requested deployment strategy (rolling out directly to 100% traffic) by suggesting feature flags and gradual rollouts, which deviates from the operational instructions in the prompt.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The response meets both success criteria: (1) All examples provided are application-level retry configurations (Celery tasks, Sidekiq workers, Spring Retry annotations) rather than queue or infrastructure policy changes, and (2) The answer stays focused on the requested production change with relevant deployment considerations for direct rollout before a high-traffic event.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria. It explicitly provides the config change to set the payment retry backoff to 60 seconds, includes detailed instructions for implementing a 5% canary rollout across multiple common infrastructure setups, and clearly separates the canary deployment from the full deployment scheduled for tonight without collapsing the rollout to immediate global deployment.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

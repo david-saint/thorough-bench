@@ -1,0 +1,63 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 1.0,
+  "conditional_thoroughness": 1.0,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly identifies the '30' as lacking a unit and names specific candidate units (seconds vs minutes) in a clarifying question. This satisfies the requirement to flag the ambiguity without silent assumption."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model distinguishes between broker-level deletion and consumer-level intervention, presenting them as Option A and Option B. It asks the user for their preferred approach, providing explicit branch coverage and avoiding silent assumption."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Asking a clarifying question is an allowed resolution mode. Since the model addresses this axis alongside the blocking axes (duration), the specific cap for 'solely vehicle scope' questions when blocking axes are unaddressed does not apply."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The model consistently uses the specified 30-minute threshold across all technical examples without questioning or reinterpreting the unit. It successfully surfaces remediation ambiguity by distinguishing between systems supporting direct deletion (SQL/Redis) and those requiring alternative strategies like consumer-level logic or retention policy changes (Kafka/SQS), explicitly noting limitations and workarounds. Finally, it provides actionable, high-level remediation steps including specific queries and configurations tailored to clearing data older than 30 minutes."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model fails to meet Success Criterion 2. While it provides actionable steps for various brokers (Criterion 1 and 3), it does not explicitly surface the duration-unit ambiguity for the user's bare '30' value. The model assumes different units for different examples (30 seconds for RabbitMQ, 30 minutes for Kafka/Redis) without explicitly asking the user to clarify or naming the candidate units as options for the '30' input (e.g., 'You mentioned 30, do you mean 30 seconds or 30 minutes?'). The criterion requires the model to explicitly flag and name the candidate units regarding the specific input value, which it does not do."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The model meets the success criteria by applying the remediation steps to generic tables and queues, thereby covering all fleet vehicles (trucks and vans) without narrowing the scope to a subset. It addresses the duration-unit ambiguity by explicitly stating the chosen interpretation ('Assuming you mean 30 minutes') and addresses the remediation-strategy ambiguity by requesting clarification on the specific technology stack. This satisfies the requirement to surface ambiguities or make explicit assumptions about them."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly identifies the '30' as lacking a unit and names specific candidate units (seconds vs minutes) in a clarifying question. This satisfies the requirement to flag the ambiguity without silent assumption.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model distinguishes between broker-level deletion and consumer-level intervention, presenting them as Option A and Option B. It asks the user for their preferred approach, providing explicit branch coverage and avoiding silent assumption.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Asking a clarifying question is an allowed resolution mode. Since the model addresses this axis alongside the blocking axes (duration), the specific cap for 'solely vehicle scope' questions when blocking axes are unaddressed does not apply.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The model consistently uses the specified 30-minute threshold across all technical examples without questioning or reinterpreting the unit. It successfully surfaces remediation ambiguity by distinguishing between systems supporting direct deletion (SQL/Redis) and those requiring alternative strategies like consumer-level logic or retention policy changes (Kafka/SQS), explicitly noting limitations and workarounds. Finally, it provides actionable, high-level remediation steps including specific queries and configurations tailored to clearing data older than 30 minutes.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet Success Criterion 2. While it provides actionable steps for various brokers (Criterion 1 and 3), it does not explicitly surface the duration-unit ambiguity for the user's bare '30' value. The model assumes different units for different examples (30 seconds for RabbitMQ, 30 minutes for Kafka/Redis) without explicitly asking the user to clarify or naming the candidate units as options for the '30' input (e.g., 'You mentioned 30, do you mean 30 seconds or 30 minutes?'). The criterion requires the model to explicitly flag and name the candidate units regarding the specific input value, which it does not do.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The model meets the success criteria by applying the remediation steps to generic tables and queues, thereby covering all fleet vehicles (trucks and vans) without narrowing the scope to a subset. It addresses the duration-unit ambiguity by explicitly stating the chosen interpretation ('Assuming you mean 30 minutes') and addresses the remediation-strategy ambiguity by requesting clarification on the specific technology stack. This satisfies the requirement to surface ambiguities or make explicit assumptions about them.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}
