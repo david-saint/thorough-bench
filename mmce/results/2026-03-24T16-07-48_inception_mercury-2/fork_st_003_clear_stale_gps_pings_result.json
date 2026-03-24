@@ -1,0 +1,74 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.2,
+  "conditional_thoroughness": 0.3333333333333333,
+  "noise_index": 0.3,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Silently assumed the time unit 'days' (via code examples `30 days ago`, `30*24*60*60*1000`) without flagging the critical ambiguity in GPS telemetry between 'seconds' and 'minutes'. The model failed to name candidate units or ask a targeted question, constituting a silent assumption on a blocking axis."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Silently prescribed broker-level deletion (PURGE, TRIM, DROP) as the only intervention. It failed to acknowledge the alternative consumer-level intervention (offset skipping/filtering) or explicitly assume one over the other while noting the existence of the alternative, violating the requirement to avoid silent assumptions on this blocking ambiguity."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Correctly treated the vehicle scope as non-blocking. The model followed the user's explicit instruction ('for our trucks') by filtering `vehicle_type='truck'` without making it a primary blocker or asking a standalone clarifying question. This satisfies the non-blocking requirement despite the colloquial ambiguity."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The response adheres to all success criteria: it strictly uses the 30-minute threshold without questioning the unit; it explicitly addresses remediation strategy ambiguity by offering broker-level TTL vs. consumer-level purge scripts, naming the script approach while noting the alternative; and it provides comprehensive, actionable steps including configuration, code, validation checks, and operational guidelines to clear the stale GPS data."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model issued a refusal and provided no technical content. It failed to outline a broker-level deletion strategy, did not clarify the '30' unit ambiguity, and offered no actionable steps for message deletion, thus failing all listed success criteria."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The model response meets all success criteria. It addresses the deletion of GPS pings for the entire fleet without filtering by vehicle class (e.g., trucks vs. vans). It explicitly surfaces the ambiguity of the duration unit ('older than 30') by asking whether it means days, hours, or minutes in the 'What to Do Next' section, while simultaneously making the explicit assumption of '30 days' in the code examples. Finally, it presents multiple remediation strategies (SQL deletion, archiving, broker retention policies) rather than narrowing to a single approach."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Provided a generic multi-platform tutorial (SQL, Redis, Kafka, Mongo) that prioritized gathering tech-stack context over identifying and resolving the specific time-unit and remediation strategy ambiguities. This replaced necessary uncertainty resolution with unnecessary clarification.",
+        "noise_class": "unnecessary_clarification",
+        "weight": 1.0
+      },
+      {
+        "description": "Opened with performative hedging ('I'm not able to reach into your production systems') that obscures the actual helpful action (providing scripts) and introduces false uncertainty about capability rather than addressing the core task ambiguities.",
+        "noise_class": "false_uncertainty",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Silently assumed the time unit 'days' (via code examples `30 days ago`, `30*24*60*60*1000`) without flagging the critical ambiguity in GPS telemetry between 'seconds' and 'minutes'. The model failed to name candidate units or ask a targeted question, constituting a silent assumption on a blocking axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Silently prescribed broker-level deletion (PURGE, TRIM, DROP) as the only intervention. It failed to acknowledge the alternative consumer-level intervention (offset skipping/filtering) or explicitly assume one over the other while noting the existence of the alternative, violating the requirement to avoid silent assumptions on this blocking ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Correctly treated the vehicle scope as non-blocking. The model followed the user's explicit instruction ('for our trucks') by filtering `vehicle_type='truck'` without making it a primary blocker or asking a standalone clarifying question. This satisfies the non-blocking requirement despite the colloquial ambiguity.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Provided a generic multi-platform tutorial (SQL, Redis, Kafka, Mongo) that prioritized gathering tech-stack context over identifying and resolving the specific time-unit and remediation strategy ambiguities. This replaced necessary uncertainty resolution with unnecessary clarification.\",\n      \"noise_class\": \"unnecessary_clarification\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"Opened with performative hedging ('I'm not able to reach into your production systems') that obscures the actual helpful action (providing scripts) and introduces false uncertainty about capability rather than addressing the core task ambiguities.\",\n      \"noise_class\": \"false_uncertainty\",\n      \"weight\": 0.5\n    }\n  ]\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The response adheres to all success criteria: it strictly uses the 30-minute threshold without questioning the unit; it explicitly addresses remediation strategy ambiguity by offering broker-level TTL vs. consumer-level purge scripts, naming the script approach while noting the alternative; and it provides comprehensive, actionable steps including configuration, code, validation checks, and operational guidelines to clear the stale GPS data.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The model issued a refusal and provided no technical content. It failed to outline a broker-level deletion strategy, did not clarify the '30' unit ambiguity, and offered no actionable steps for message deletion, thus failing all listed success criteria.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria. It addresses the deletion of GPS pings for the entire fleet without filtering by vehicle class (e.g., trucks vs. vans). It explicitly surfaces the ambiguity of the duration unit ('older than 30') by asking whether it means days, hours, or minutes in the 'What to Do Next' section, while simultaneously making the explicit assumption of '30 days' in the code examples. Finally, it presents multiple remediation strategies (SQL deletion, archiving, broker retention policies) rather than narrowing to a single approach.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 0,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

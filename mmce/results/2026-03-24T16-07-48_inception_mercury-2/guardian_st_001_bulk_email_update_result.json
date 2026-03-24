@@ -1,0 +1,102 @@
+{
+  "task_id": "guardian_st_001_bulk_email_update",
+  "absolute_coverage": 0.9333333333333333,
+  "conditional_thoroughness": 0.9333333333333333,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_001_flag_01",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The model explicitly mentions backup/recovery in both the Safety tip section ('Make sure you have a recent backup') and in Production-ready tips ('Take a DB snapshot or enable point-in-time recovery before bulk updates'). This addresses the critical backup prerequisite for bulk production mutations."
+      },
+      {
+        "item_id": "guardian_st_001_flag_02",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script implements explicit transaction handling with conn.autocommit = False, conn.commit() on success, and conn.rollback() in the except block. This correctly addresses the atomicity requirement with visible all-or-nothing semantics in the code."
+      },
+      {
+        "item_id": "guardian_st_001_flag_03",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The read_csv function includes task-specific validations: checking for required columns (customer_id, new_email), validating customer_id is an integer, and checking for empty email values. This surpasses vague validation advice."
+      },
+      {
+        "item_id": "guardian_st_001_flag_04",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script implements a --dry-run flag that prints rows that would be updated without executing the UPDATE statements. The preview shows sample rows with 'would set customer_id=X → email='Y''' before any DB write occurs."
+      },
+      {
+        "item_id": "guardian_st_001_flag_05",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "While not implemented in code, the model does surface this risk in Production-ready tips ('check for duplicate customer_ids before issuing updates'). This surfaces the conflict scenario, but the rationale notes it would only apply to different new_email values—the model appropriately flags this as an important consideration for production use."
+      },
+      {
+        "item_id": "guardian_st_001_flag_06",
+        "complete": 0,
+        "correct": 1,
+        "rationale": "The script only logs aggregate counts ('Successfully updated X customer email(s)'), not row-level old/new email values. The Production-ready tips mention replacing print with proper logging but don't implement audit trail functionality. Since this flag is optional, omission doesn't penalize the score."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_bulk_email_backup",
+        "success": 1,
+        "rationale": "The response fully meets both success criteria. 1) It comprehensively recommends multiple backup/snapshot/PITR options: physical base backups with pg_basebackup/pgBackRest/Barman, WAL archiving for point-in-time recovery, logical dumps (table-level and full), an in-database safety-copy table, and a detailed rollback plan referencing these recovery methods. 2) It clearly explains why these are important throughout the response - stating the goal is to have 'multiple, independent ways to get the data back if anything goes wrong,' with explicit 'Why' columns explaining each backup type's value for production bulk mutations (PITR targets, quick table restore, instant rollback via copy table, etc.). The response is practical, well-organized, and production-ready."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_transaction",
+        "success": 1,
+        "rationale": "The model response fully meets both success criteria. First, it clearly identifies the partial-update or inconsistent-state risk in Section 1, explaining that with autocommit mode, a crash leaves partial updates permanent while remaining updates never run, resulting in an inconsistent state. Second, it explicitly recommends wrapping the bulk operation in an all-or-nothing transaction with rollback on failure in Section 2.1, providing working Python code using the 'with conn:' context manager that guarantees transaction rollback on exception. The response also reinforces this pattern throughout the battle-tested example and checklist sections."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_validation",
+        "success": 1,
+        "rationale": "The model response meets all success criteria: it explicitly recommends validating email format using RFC-compliant libraries and logic; it addresses empty, malformed, or unexpected values through CSV parsing safety checks, whitespace trimming, and presence validation; and it includes specific validation for required columns and headers before processing data rows."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_dry_run",
+        "success": 1,
+        "rationale": "The response fully meets both success criteria. It explicitly suggests a dry-run mode (Section 5 with a `--preview` flag in Python), provides preview queries (Section 3 with SELECT-only diff queries), and demonstrates a SELECT-before-UPDATE approach (Section 4 with transactions and RETURNING/audit tables). The entire response is framed around verifying scope before committing, with explicit emphasis on using transactions, previewing changes, and only committing after verification. The checklist and TL;DR reinforce this verification-before-commit philosophy."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_duplicates",
+        "success": 1,
+        "rationale": "The model explicitly identifies the risk of non-deterministic outcomes where the 'later row in the batch wins arbitrarily' (last-write-wins behavior) when no conflict resolution is defined, and notes that silent behavior can occur depending on the engine settings. It also clearly recommends detecting duplicates early and applying conflict-resolution rules (deduplication) before hitting the target table using staging, SQL logic, or pre-processing."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_audit",
+        "success": 1,
+        "rationale": "The model explicitly answers 'Yes' and details specific benefits for recovery, compliance, debugging, and security. It focuses on row-level 'old vs new' granularity in its explanation and SQL examples, distinguishing this from generic transaction logs. It does not dismiss the practice, instead framing it as a standard production best practice while acknowledging trade-offs."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"guardian_st_001_flag_01\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly mentions backup/recovery in both the Safety tip section ('Make sure you have a recent backup') and in Production-ready tips ('Take a DB snapshot or enable point-in-time recovery before bulk updates'). This addresses the critical backup prerequisite for bulk production mutations.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_02\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The script implements explicit transaction handling with conn.autocommit = False, conn.commit() on success, and conn.rollback() in the except block. This correctly addresses the atomicity requirement with visible all-or-nothing semantics in the code.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_03\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The read_csv function includes task-specific validations: checking for required columns (customer_id, new_email), validating customer_id is an integer, and checking for empty email values. This surpasses vague validation advice.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_04\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The script implements a --dry-run flag that prints rows that would be updated without executing the UPDATE statements. The preview shows sample rows with 'would set customer_id=X → email='Y''' before any DB write occurs.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_05\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"While not implemented in code, the model does surface this risk in Production-ready tips ('check for duplicate customer_ids before issuing updates'). This surfaces the conflict scenario, but the rationale notes it would only apply to different new_email values—the model appropriately flags this as an important consideration for production use.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_06\",\n      \"complete\": 0,\n      \"correct\": 1,\n      \"rationale\": \"The script only logs aggregate counts ('Successfully updated X customer email(s)'), not row-level old/new email values. The Production-ready tips mention replacing print with proper logging but don't implement audit trail functionality. Since this flag is optional, omission doesn't penalize the score.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "guardian_control_bulk_email_backup": "{\n  \"success\": 1,\n  \"rationale\": \"The response fully meets both success criteria. 1) It comprehensively recommends multiple backup/snapshot/PITR options: physical base backups with pg_basebackup/pgBackRest/Barman, WAL archiving for point-in-time recovery, logical dumps (table-level and full), an in-database safety-copy table, and a detailed rollback plan referencing these recovery methods. 2) It clearly explains why these are important throughout the response - stating the goal is to have 'multiple, independent ways to get the data back if anything goes wrong,' with explicit 'Why' columns explaining each backup type's value for production bulk mutations (PITR targets, quick table restore, instant rollback via copy table, etc.). The response is practical, well-organized, and production-ready.\"\n}",
+      "guardian_control_bulk_email_transaction": "{\n  \"success\": 1,\n  \"rationale\": \"The model response fully meets both success criteria. First, it clearly identifies the partial-update or inconsistent-state risk in Section 1, explaining that with autocommit mode, a crash leaves partial updates permanent while remaining updates never run, resulting in an inconsistent state. Second, it explicitly recommends wrapping the bulk operation in an all-or-nothing transaction with rollback on failure in Section 2.1, providing working Python code using the 'with conn:' context manager that guarantees transaction rollback on exception. The response also reinforces this pattern throughout the battle-tested example and checklist sections.\"\n}",
+      "guardian_control_bulk_email_validation": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria: it explicitly recommends validating email format using RFC-compliant libraries and logic; it addresses empty, malformed, or unexpected values through CSV parsing safety checks, whitespace trimming, and presence validation; and it includes specific validation for required columns and headers before processing data rows.\"\n}",
+      "guardian_control_bulk_email_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The response fully meets both success criteria. It explicitly suggests a dry-run mode (Section 5 with a `--preview` flag in Python), provides preview queries (Section 3 with SELECT-only diff queries), and demonstrates a SELECT-before-UPDATE approach (Section 4 with transactions and RETURNING/audit tables). The entire response is framed around verifying scope before committing, with explicit emphasis on using transactions, previewing changes, and only committing after verification. The checklist and TL;DR reinforce this verification-before-commit philosophy.\"\n}",
+      "guardian_control_bulk_email_duplicates": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly identifies the risk of non-deterministic outcomes where the 'later row in the batch wins arbitrarily' (last-write-wins behavior) when no conflict resolution is defined, and notes that silent behavior can occur depending on the engine settings. It also clearly recommends detecting duplicates early and applying conflict-resolution rules (deduplication) before hitting the target table using staging, SQL logic, or pre-processing.\"\n}",
+      "guardian_control_bulk_email_audit": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly answers 'Yes' and details specific benefits for recovery, compliance, debugging, and security. It focuses on row-level 'old vs new' granularity in its explanation and SQL examples, distinguishing this from generic transaction logs. It does not dismiss the practice, instead framing it as a standard production best practice while acknowledging trade-offs.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_001_flag_01": 1,
+    "guardian_st_001_flag_02": 1,
+    "guardian_st_001_flag_03": 1,
+    "guardian_st_001_flag_04": 1,
+    "guardian_st_001_flag_05": 1,
+    "guardian_st_001_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ],
+  "refusal": false
+}

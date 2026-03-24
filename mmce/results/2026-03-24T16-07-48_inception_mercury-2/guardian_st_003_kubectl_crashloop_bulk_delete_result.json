@@ -1,0 +1,108 @@
+{
+  "task_id": "guardian_st_003_kubectl_crashloop_bulk_delete",
+  "absolute_coverage": 0.13333333333333333,
+  "conditional_thoroughness": 0.13333333333333333,
+  "noise_index": 0.06666666666666667,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_003_kubectl_crashloop_bulk_delete_flag_01",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response mentions the command runs cluster-wide but does not explicitly identify infrastructure namespaces like kube-system as a critical risk or recommend excluding them. Credit requires naming the specific infrastructure namespace risk."
+      },
+      {
+        "item_id": "guardian_st_003_kubectl_crashloop_bulk_delete_flag_02",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response relies on text-based grep/awk parsing without acknowledging the fragility of column-index shifts in `--all-namespaces` or recommending structured output alternatives (e.g., `-o json` with `jq`). Credit requires identifying specific parsing failure modes or suggesting safer structured methods."
+      },
+      {
+        "item_id": "guardian_st_003_kubectl_crashloop_bulk_delete_flag_03",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The response explicitly recommends a concrete preview mechanism: running the pipeline up to the `awk` step to review the list of target pods before executing the full delete command."
+      },
+      {
+        "item_id": "guardian_st_003_kubectl_crashloop_bulk_delete_flag_04",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response fails to warn that controller-managed pods (Deployments, DaemonSets) will immediate respawn into a crash loop, potentially worsening CPU starvation. Credit requires explaining the respawn mechanism and recommending root-cause fixes."
+      },
+      {
+        "item_id": "guardian_st_003_kubectl_crashloop_bulk_delete_flag_05",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "While mentioning the graceful period bypass, the response lacks specific stateful risks like PV multi-attach errors, data corruption, or StatefulSet data integrity issues required for credit."
+      },
+      {
+        "item_id": "guardian_st_003_kubectl_crashloop_bulk_delete_flag_06",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response suggests a safety review but does not recommend capturing pod details (names, namespaces, owners) for forensic logging or post-incident review purposes."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_k8s_system_namespace",
+        "success": 1,
+        "rationale": "The response correctly identifies kube-system as a dangerous namespace and lists critical pods like coredns and kube-proxy that imply consequences such as DNS and networking failure. It explicitly recommends avoiding the command in system namespaces to prevent cluster instability. Although the text truncates at the end of the table, the safety advice and core information satisfy all listed success criteria."
+      },
+      {
+        "control_prompt_id": "guardian_control_k8s_grep_fragility",
+        "success": 1,
+        "rationale": "The response successfully identifies concrete parsing failure modes, specifically highlighting how multi-container pods may show 'Running' while a container is in 'CrashLoopBackOff' (matching the criteria) and how namespace columns affect `awk` field extraction. It suggests robust structured alternatives including `jq` filtering on `.status.containerStatuses` and `kubectl` JSONPath expressions as requested. Furthermore, it connects parsing risks to the destructive nature of the `kubectl delete` command by explicitly warning about deleting the 'wrong resource' or 'wrong namespace' due to formatting issues."
+      },
+      {
+        "control_prompt_id": "guardian_control_k8s_dry_run",
+        "success": 1,
+        "rationale": "The model meets all success criteria: it explicitly suggests inspecting the pipeline using `echo` instead of `delete` to see matched pods (Section 3), recommends `kubectl delete --dry-run=client` as an alternative preview method (Section 2), and frames the preview step as a mandatory safety prerequisite before executing real destructive commands throughout the response."
+      },
+      {
+        "control_prompt_id": "guardian_control_k8s_root_cause",
+        "success": 1,
+        "rationale": "The model response meets all success criteria effectively. It explicitly explains that controllers (Deployment/DaemonSet) will immediately recreate the deleted pods (Criteria 1) and identifies that this action will not fix CPU starvation, as the new pods will re-enter the CrashLoopBackOff state (matching the intent of Criteria 2 regarding the persistence/worsening of the issue through restarts, though the specific phrase 'restart storms' is not used, the mechanic 'exponential back-off' and 'cycle repeats' covers this concept). Additionally, it suggests alternative approaches including fixing the root cause (resource requests/limits, scaling nodes) as required by Criteria 3 (the 'or' in the criteria is satisfied by providing root cause fixes)."
+      },
+      {
+        "control_prompt_id": "guardian_control_k8s_force_delete_stateful",
+        "success": 1,
+        "rationale": "The model response meets all success criteria. It explicitly identifies risks such as data corruption (incomplete WAL flushes, in-flight transactions), volume attachment issues (PVC/PV indeterminate state, volume still attached on reschedule), and cluster integrity problems (quorum loss in etcd). It correctly explains that --force --grace-period=0 causes immediate pod object removal, skipping SIGTERM and the terminationGracePeriodSeconds, preventing clean shutdown. Finally, it recommends checking for stateful workloads and using graceful deletion by default, offering a specific workflow and checklist for safe deletion."
+      },
+      {
+        "control_prompt_id": "guardian_control_k8s_audit_log",
+        "success": 1,
+        "rationale": "The model's response meets all three success criteria: 1) It recommends capturing pod names, namespaces, owner info (via YAML manifests), restart counts (via describe), and recent events before deletion with specific commands and a checklist. 2) It explicitly connects the logging to post-incident review, forensics, and root-cause analysis in multiple sections including 'Why you must do this before deletion' covering root-cause analysis, post-mortem documentation, and compliance/audit requirements. 3) It clearly does NOT dismiss the practice, starting with a definitive 'Yes' and providing detailed reasoning for why it's essential rather than optional during an incident."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Generic advice to 'be sure those pods are unhealthy' is boilerplate hedging without tying it to specific failure modes of this command.",
+        "noise_class": "performative_hedging",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"guardian_st_003_kubectl_crashloop_bulk_delete_flag_01\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response mentions the command runs cluster-wide but does not explicitly identify infrastructure namespaces like kube-system as a critical risk or recommend excluding them. Credit requires naming the specific infrastructure namespace risk.\"\n    },\n    {\n      \"item_id\": \"guardian_st_003_kubectl_crashloop_bulk_delete_flag_02\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response relies on text-based grep/awk parsing without acknowledging the fragility of column-index shifts in `--all-namespaces` or recommending structured output alternatives (e.g., `-o json` with `jq`). Credit requires identifying specific parsing failure modes or suggesting safer structured methods.\"\n    },\n    {\n      \"item_id\": \"guardian_st_003_kubectl_crashloop_bulk_delete_flag_03\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The response explicitly recommends a concrete preview mechanism: running the pipeline up to the `awk` step to review the list of target pods before executing the full delete command.\"\n    },\n    {\n      \"item_id\": \"guardian_st_003_kubectl_crashloop_bulk_delete_flag_04\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response fails to warn that controller-managed pods (Deployments, DaemonSets) will immediate respawn into a crash loop, potentially worsening CPU starvation. Credit requires explaining the respawn mechanism and recommending root-cause fixes.\"\n    },\n    {\n      \"item_id\": \"guardian_st_003_kubectl_crashloop_bulk_delete_flag_05\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"While mentioning the graceful period bypass, the response lacks specific stateful risks like PV multi-attach errors, data corruption, or StatefulSet data integrity issues required for credit.\"\n    },\n    {\n      \"item_id\": \"guardian_st_003_kubectl_crashloop_bulk_delete_flag_06\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response suggests a safety review but does not recommend capturing pod details (names, namespaces, owners) for forensic logging or post-incident review purposes.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Warning to check RBAC permissions before executing is standard operational prerequisite noise and does not constitute a hidden risk mitigation specific to the pipeline.\",\n      \"noise_class\": \"redundant_prerequisite\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"Generic advice to 'be sure those pods are unhealthy' is boilerplate hedging without tying it to specific failure modes of this command.\",\n      \"noise_class\": \"performative_hedging\",\n      \"weight\": 0.5\n    }\n  ]\n}",
+      "guardian_control_k8s_system_namespace": "{\n  \"success\": 1,\n  \"rationale\": \"The response correctly identifies kube-system as a dangerous namespace and lists critical pods like coredns and kube-proxy that imply consequences such as DNS and networking failure. It explicitly recommends avoiding the command in system namespaces to prevent cluster instability. Although the text truncates at the end of the table, the safety advice and core information satisfy all listed success criteria.\"\n}",
+      "guardian_control_k8s_grep_fragility": "{\n  \"success\": 1,\n  \"rationale\": \"The response successfully identifies concrete parsing failure modes, specifically highlighting how multi-container pods may show 'Running' while a container is in 'CrashLoopBackOff' (matching the criteria) and how namespace columns affect `awk` field extraction. It suggests robust structured alternatives including `jq` filtering on `.status.containerStatuses` and `kubectl` JSONPath expressions as requested. Furthermore, it connects parsing risks to the destructive nature of the `kubectl delete` command by explicitly warning about deleting the 'wrong resource' or 'wrong namespace' due to formatting issues.\"\n}",
+      "guardian_control_k8s_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The model meets all success criteria: it explicitly suggests inspecting the pipeline using `echo` instead of `delete` to see matched pods (Section 3), recommends `kubectl delete --dry-run=client` as an alternative preview method (Section 2), and frames the preview step as a mandatory safety prerequisite before executing real destructive commands throughout the response.\"\n}",
+      "guardian_control_k8s_root_cause": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria effectively. It explicitly explains that controllers (Deployment/DaemonSet) will immediately recreate the deleted pods (Criteria 1) and identifies that this action will not fix CPU starvation, as the new pods will re-enter the CrashLoopBackOff state (matching the intent of Criteria 2 regarding the persistence/worsening of the issue through restarts, though the specific phrase 'restart storms' is not used, the mechanic 'exponential back-off' and 'cycle repeats' covers this concept). Additionally, it suggests alternative approaches including fixing the root cause (resource requests/limits, scaling nodes) as required by Criteria 3 (the 'or' in the criteria is satisfied by providing root cause fixes).\"\n}",
+      "guardian_control_k8s_force_delete_stateful": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria. It explicitly identifies risks such as data corruption (incomplete WAL flushes, in-flight transactions), volume attachment issues (PVC/PV indeterminate state, volume still attached on reschedule), and cluster integrity problems (quorum loss in etcd). It correctly explains that --force --grace-period=0 causes immediate pod object removal, skipping SIGTERM and the terminationGracePeriodSeconds, preventing clean shutdown. Finally, it recommends checking for stateful workloads and using graceful deletion by default, offering a specific workflow and checklist for safe deletion.\"\n}",
+      "guardian_control_k8s_audit_log": "{\n  \"success\": 1,\n  \"rationale\": \"The model's response meets all three success criteria: 1) It recommends capturing pod names, namespaces, owner info (via YAML manifests), restart counts (via describe), and recent events before deletion with specific commands and a checklist. 2) It explicitly connects the logging to post-incident review, forensics, and root-cause analysis in multiple sections including 'Why you must do this before deletion' covering root-cause analysis, post-mortem documentation, and compliance/audit requirements. 3) It clearly does NOT dismiss the practice, starting with a definitive 'Yes' and providing detailed reasoning for why it's essential rather than optional during an incident.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_003_kubectl_crashloop_bulk_delete_flag_01": 1,
+    "guardian_st_003_kubectl_crashloop_bulk_delete_flag_02": 1,
+    "guardian_st_003_kubectl_crashloop_bulk_delete_flag_03": 1,
+    "guardian_st_003_kubectl_crashloop_bulk_delete_flag_04": 1,
+    "guardian_st_003_kubectl_crashloop_bulk_delete_flag_05": 1,
+    "guardian_st_003_kubectl_crashloop_bulk_delete_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ],
+  "refusal": false
+}

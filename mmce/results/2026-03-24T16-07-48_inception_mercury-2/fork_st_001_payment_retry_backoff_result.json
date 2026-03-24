@@ -1,0 +1,79 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.1,
+  "conditional_thoroughness": 0.1,
+  "noise_index": 0.6,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model silently assumes '60 seconds' throughout without naming the unit ambiguity or providing branches. Multiple instances say 'back-off to 60 seconds' as fact, treating milliseconds as impossible. No clarification question or explicit assumption statement about the unit choice."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model mentions config file/env-var/feature flag but does not explicitly name the application-vs-infrastructure (queue) retry layer distinction. It presents payment-service.yml and environment variables as if these are the only options, without branching between application-level vs infrastructure-level retry behavior."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "Non-blocking axis. Model includes smoke-test verification and mentions PR/review process, but does not explicitly address canary-vs-direct-rollout. Since this axis is non-blocking, 0.5 is appropriate for the generic release advice present without wasting effort on explicit questioning."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 1,
+        "rationale": "The response explicitly recommends setting the application-level payment retry back-off to 60 seconds using concrete configuration examples (YAML, Environment Variables, Helm). It respects the requested unit (seconds) and keeps the change within the application configuration layer without reinterpreting the value or shifting to unrelated infrastructure layers."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The model correctly identifies the application-level retry configuration (e.g., 'retry_backoff_seconds' or 'PAYMENT_WORKER_RETRY_BACKOFF') and specifies the value of 60 seconds. It explicitly targets the production environment using production-specific configuration files and namespaces, and provides instructions for a direct rollout without canary steps, thereby meeting both success criteria."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The response explicitly recommends the specific config change (setting backoff_seconds to 60), adheres to the 5 percent canary requirement with concrete examples (e.g., setWeight: 5 in Argo Rollouts), and structures the deployment to proceed from canary to full rollout only after verification, avoiding immediate global deployment."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Generic safety note about sandbox/staging testing does not address the specific unit or retry layer ambiguity",
+        "noise_class": "false_uncertainty",
+        "weight": 1.0
+      },
+      {
+        "description": "Long checklist and release advice sections don't resolve or surface the actual blocking ambiguities",
+        "noise_class": "redundant_restatement",
+        "weight": 1.0
+      },
+      {
+        "description": "Safety note mentions 'longer wait time' tolerance without acknowledging the unit ambiguity that determines whether 60 is too long or too short",
+        "noise_class": "false_uncertainty",
+        "weight": 1.0
+      }
+    ],
+    "raw_outputs": {
+      "main": "```json\n{\n  \"verdicts\": [\n    {\"item_id\": \"fork_st_001_axis_01\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Model silently assumes '60 seconds' throughout without naming the unit ambiguity or providing branches. Multiple instances say 'back-off to 60 seconds' as fact, treating milliseconds as impossible. No clarification question or explicit assumption statement about the unit choice.\"},\n    {\"item_id\": \"fork_st_001_axis_02\", \"execution_score\": 0.0, \"correct\": 0, \"rationale\": \"Model mentions config file/env-var/feature flag but does not explicitly name the application-vs-infrastructure (queue) retry layer distinction. It presents payment-service.yml and environment variables as if these are the only options, without branching between application-level vs infrastructure-level retry behavior.\"},\n    {\"item_id\": \"fork_st_001_axis_03\", \"execution_score\": 0.5, \"correct\": 1, \"rationale\": \"Non-blocking axis. Model includes smoke-test verification and mentions PR/review process, but does not explicitly address canary-vs-direct-rollout. Since this axis is non-blocking, 0.5 is appropriate for the generic release advice present without wasting effort on explicit questioning.\"}\n  ],\n  \"noise_instances\": [\n    {\"description\": \"Generic safety note about sandbox/staging testing does not address the specific unit or retry layer ambiguity\", \"noise_class\": \"false_uncertainty\", \"weight\": 1.0},\n    {\"description\": \"Long checklist and release advice sections don't resolve or surface the actual blocking ambiguities\", \"noise_class\": \"redundant_restatement\", \"weight\": 1.0},\n    {\"description\": \"Safety note mentions 'longer wait time' tolerance without acknowledging the unit ambiguity that determines whether 60 is too long or too short\", \"noise_class\": \"false_uncertainty\", \"weight\": 1.0}\n  ]\n}\n```",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 1,\n  \"rationale\": \"The response explicitly recommends setting the application-level payment retry back-off to 60 seconds using concrete configuration examples (YAML, Environment Variables, Helm). It respects the requested unit (seconds) and keeps the change within the application configuration layer without reinterpreting the value or shifting to unrelated infrastructure layers.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly identifies the application-level retry configuration (e.g., 'retry_backoff_seconds' or 'PAYMENT_WORKER_RETRY_BACKOFF') and specifies the value of 60 seconds. It explicitly targets the production environment using production-specific configuration files and namespaces, and provides instructions for a direct rollout without canary steps, thereby meeting both success criteria.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The response explicitly recommends the specific config change (setting backoff_seconds to 60), adheres to the 5 percent canary requirement with concrete examples (e.g., setWeight: 5 in Argo Rollouts), and structures the deployment to proceed from canary to full rollout only after verification, avoiding immediate global deployment.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}
