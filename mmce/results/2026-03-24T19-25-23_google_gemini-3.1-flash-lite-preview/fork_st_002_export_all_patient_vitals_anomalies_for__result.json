@@ -1,0 +1,87 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.2857142857142857,
+  "conditional_thoroughness": 0.2857142857142857,
+  "noise_index": 0.2571428571428572,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model silently assumes '120' refers to a raw heart_rate value (heart_rate > 120) in the executed query snippet without surfacing the competing interpretation of an anomaly severty or score field. It fails to name the specific choice as required."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "Model requests a 'cohort_uuid' or 'study_id' but does not explicitly surface the concrete 'recent cohort' boundary interpretations (e.g., most recently enrolled vs. active vs. latest data cut) as required by the ambiguity axis. Asking for an ID without defining the 'recent' criterion leaves the ambiguity unresolved."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model explicitly asks a targeted clarifying question regarding whether de-identification (removing direct identifiers) is required vs retaining direct patient identifiers, satisfying the requirement to surface the identifier scope choice."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 0.5,
+        "correct": 0,
+        "rationale": "Model avoids blocking or clarifying this non-blocking ambiguity, which is efficient, but fails to make a visible assumption (e.g., 'assuming Parquet') to earn full credit. It implicitly assumes a format without stating it."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model correctly treated the >120 cutoff as applying to the recorded vital reading field (v.reading_value > 120), not the anomaly_score. The SQL query explicitly filters by reading_value with a comment confirming 'Filters by the vital sign reading, not score'. The response does not reinterpret this as anomaly_score or any derived field, and any clarification focuses on environment-specific schema matching rather than the threshold-field choice."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 1,
+        "rationale": "The model adheres to the cohort requirement by explicitly instructing the user to filter for the 'Most Recently Enrolled Cohort' ID via placeholders, thereby treating the set correctly without hallucinating or substituting a specific definition. The response primarily focuses on the security, compliance, and audit trail requirements (addressing the 'other unresolved parts' of the request regarding secure handoff and FDA readiness) rather than debating the cohort membership itself."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 1,
+        "rationale": "The model response prioritizes data privacy and regulatory compliance by refusing to provide specific database commands for clinical trial data, which mitigates risks of hallucination and unauthorized access. It explicitly reinforces the privacy constraint to exclude direct identifiers (Name, DOB, MRN) and utilize only the study_subject_id, satisfying the identifier scope requirements without reinterpreting the handoff. The guidance provided focuses on governance, authorization, and validation protocols (other unresolved parts) rather than ambiguous identifier definitions, aligning with all success criteria."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model explicitly maintains the CSV serialization requirement by using .csv extensions and CSV-specific field termination parameters in the SQL and transfer commands, never suggesting or defaulting to alternative formats. Furthermore, all clarifications provided regarding schema mapping, security compliance, and permissions focus on data integrity and access rather than the file format, satisfying all three success criteria."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Performative hedging/False Uncertainty: The model labels the environment ('Assuming you are using standard AWS') as 'Blocking' in the scratchpad and 'Clarification Required' in the text, yet proceeds to provide a specific AWS-based query template anyway. This contradicts the need to actually resolve the blocker.",
+        "noise_class": "false_uncertainty",
+        "weight": 1.0
+      },
+      {
+        "description": "Redundant restatement: The 'High-Severity Operational Risk' section repeats the de-identification/encryption warnings from the 'Clarification Required' section without adding new strategic resolution value.",
+        "noise_class": "redundant_restatement",
+        "weight": 0.8
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model silently assumes '120' refers to a raw heart_rate value (heart_rate > 120) in the executed query snippet without surfacing the competing interpretation of an anomaly severty or score field. It fails to name the specific choice as required.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"Model requests a 'cohort_uuid' or 'study_id' but does not explicitly surface the concrete 'recent cohort' boundary interpretations (e.g., most recently enrolled vs. active vs. latest data cut) as required by the ambiguity axis. Asking for an ID without defining the 'recent' criterion leaves the ambiguity unresolved.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Model explicitly asks a targeted clarifying question regarding whether de-identification (removing direct identifiers) is required vs retaining direct patient identifiers, satisfying the requirement to surface the identifier scope choice.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\",\n      \"execution_score\": 0.5,\n      \"correct\": 0,\n      \"rationale\": \"Model avoids blocking or clarifying this non-blocking ambiguity, which is efficient, but fails to make a visible assumption (e.g., 'assuming Parquet') to earn full credit. It implicitly assumes a format without stating it.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Performative hedging/False Uncertainty: The model labels the environment ('Assuming you are using standard AWS') as 'Blocking' in the scratchpad and 'Clarification Required' in the text, yet proceeds to provide a specific AWS-based query template anyway. This contradicts the need to actually resolve the blocker.\",\n      \"noise_class\": \"false_uncertainty\",\n      \"weight\": 1.0\n    },\n    {\n      \"description\": \"Redundant restatement: The 'High-Severity Operational Risk' section repeats the de-identification/encryption warnings from the 'Clarification Required' section without adding new strategic resolution value.\",\n      \"noise_class\": \"redundant_restatement\",\n      \"weight\": 0.8\n    }\n  ]\n}",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly treated the >120 cutoff as applying to the recorded vital reading field (v.reading_value > 120), not the anomaly_score. The SQL query explicitly filters by reading_value with a comment confirming 'Filters by the vital sign reading, not score'. The response does not reinterpret this as anomaly_score or any derived field, and any clarification focuses on environment-specific schema matching rather than the threshold-field choice.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 1,\n  \"rationale\": \"The model adheres to the cohort requirement by explicitly instructing the user to filter for the 'Most Recently Enrolled Cohort' ID via placeholders, thereby treating the set correctly without hallucinating or substituting a specific definition. The response primarily focuses on the security, compliance, and audit trail requirements (addressing the 'other unresolved parts' of the request regarding secure handoff and FDA readiness) rather than debating the cohort membership itself.\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model response prioritizes data privacy and regulatory compliance by refusing to provide specific database commands for clinical trial data, which mitigates risks of hallucination and unauthorized access. It explicitly reinforces the privacy constraint to exclude direct identifiers (Name, DOB, MRN) and utilize only the study_subject_id, satisfying the identifier scope requirements without reinterpreting the handoff. The guidance provided focuses on governance, authorization, and validation protocols (other unresolved parts) rather than ambiguous identifier definitions, aligning with all success criteria.\"\n}",
+      "fork_control_export_vitals_csv_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly maintains the CSV serialization requirement by using .csv extensions and CSV-specific field termination parameters in the SQL and transfer commands, never suggesting or defaulting to alternative formats. Furthermore, all clarifications provided regarding schema mapping, security compliance, and permissions focus on data integrity and access rather than the file format, satisfying all three success criteria.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

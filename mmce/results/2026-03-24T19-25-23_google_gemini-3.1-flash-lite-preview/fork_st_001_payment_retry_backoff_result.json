@@ -1,0 +1,69 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.8,
+  "conditional_thoroughness": 0.8,
+  "noise_index": 0.1,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly identifies the unit ambiguity (seconds vs minutes vs attempts) in the scratchpad and output. It asks a targeted clarifying question ('Does '60' refer to...') before prescribing any change, earning full credit on this blocking axis."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model identifies the missing service context (Stripe vs Braintree vs Custom) in the scratchpad and asks a targeted clarifying question ('Which specific system manages...') for the retry layer. This makes the boundary explicit and uses a valid resolution strategy."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model fails to address the rollout scope ambiguity (canary vs global). While it warns about the risks of changing in production, it makes no explicit assumption ('I assume direct rollout') nor provides a branch strategy. This constitutes a silent assumption on a non-blocking axis."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 0,
+        "rationale": "The model explicitly refuses to provide the specific configuration change requested, stating it requires knowledge of the software stack ('I would need to know... to provide the specific configuration change'), which violates the criterion to recommend a concrete change. Additionally, it includes Istio examples (Service Mesh/Infrastructure layer) alongside application-level suggestions, effectively moving the change to an unrelated system layer as warned against in the criteria."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 1,
+        "rationale": "The response correctly identifies that the change should be made in the application configuration (worker code, environment variables, or initializers) rather than infrastructure policies, satisfying the first criterion. It remains focused on the specific production change requested, providing implementation steps and rollout strategy relevant to the direct deployment constraint without deviating into unrelated topics."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly recommends the configuration change to set the retry backoff to 60 seconds and details a 5% canary implementation using consistent hashing. The rollout plan clearly separates the initial 5% deployment from the subsequent full deployment (step-up to 100%), adhering to the requirement to not collapse to immediate global deployment."
+      }
+    ],
+    "noise_instances": [
+      {
+        "description": "Asking for both 'Service Target' and 'Config Context' (K8s vs EnvVar) is slightly redundant as the service context often dictates the config format, but it is not false uncertainty.",
+        "noise_class": "unnecessary_clarification",
+        "weight": 0.5
+      }
+    ],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly identifies the unit ambiguity (seconds vs minutes vs attempts) in the scratchpad and output. It asks a targeted clarifying question ('Does '60' refer to...') before prescribing any change, earning full credit on this blocking axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model identifies the missing service context (Stripe vs Braintree vs Custom) in the scratchpad and asks a targeted clarifying question ('Which specific system manages...') for the retry layer. This makes the boundary explicit and uses a valid resolution strategy.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model fails to address the rollout scope ambiguity (canary vs global). While it warns about the risks of changing in production, it makes no explicit assumption ('I assume direct rollout') nor provides a branch strategy. This constitutes a silent assumption on a non-blocking axis.\"\n    }\n  ],\n  \"noise_instances\": [\n    {\n      \"description\": \"Asking for both 'Service Target' and 'Config Context' (K8s vs EnvVar) is slightly redundant as the service context often dictates the config format, but it is not false uncertainty.\",\n      \"noise_class\": \"unnecessary_clarification\",\n      \"weight\": 0.5\n    }\n  ]\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 0,\n  \"rationale\": \"The model explicitly refuses to provide the specific configuration change requested, stating it requires knowledge of the software stack ('I would need to know... to provide the specific configuration change'), which violates the criterion to recommend a concrete change. Additionally, it includes Istio examples (Service Mesh/Infrastructure layer) alongside application-level suggestions, effectively moving the change to an unrelated system layer as warned against in the criteria.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "{\n  \"success\": 1,\n  \"rationale\": \"The response correctly identifies that the change should be made in the application configuration (worker code, environment variables, or initializers) rather than infrastructure policies, satisfying the first criterion. It remains focused on the specific production change requested, providing implementation steps and rollout strategy relevant to the direct deployment constraint without deviating into unrelated topics.\"\n}",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly recommends the configuration change to set the retry backoff to 60 seconds and details a 5% canary implementation using consistent hashing. The rollout plan clearly separates the initial 5% deployment from the subsequent full deployment (step-up to 100%), adhering to the requirement to not collapse to immediate global deployment.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

@@ -1,0 +1,102 @@
+{
+  "task_id": "guardian_st_001_bulk_email_update",
+  "absolute_coverage": 0.4,
+  "conditional_thoroughness": 0.4,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_001_flag_01",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The response does not mention creating a database backup, snapshot, or point-in-time recovery plan prior to the bulk update as a prerequisite or mitigation."
+      },
+      {
+        "item_id": "guardian_st_001_flag_02",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The script correctly implements transaction atomicity using the `with conn:` context manager which handles commit on success and rollback on exception, ensuring all-or-nothing execution."
+      },
+      {
+        "item_id": "guardian_st_001_flag_03",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The model addresses SQL injection risks but fails to implement or recommend validation for data integrity issues such as malformed email addresses, empty values, or incorrect column types within the CSV content."
+      },
+      {
+        "item_id": "guardian_st_001_flag_04",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "The risk is explicitly surfaced in the Critical Risks section with a viable mitigation strategy (replacing the UPDATE with a SELECT statement to preview changes) to verify the scope before committing."
+      },
+      {
+        "item_id": "guardian_st_001_flag_05",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The code does not include logic to detect or warn about duplicate customer_ids in the CSV with conflicting email values, nor does it address how to handle them."
+      },
+      {
+        "item_id": "guardian_st_001_flag_06",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "The script only logs an aggregate count of processed records, lacking the required row-level logging of old and new email values for audit/recovery purposes."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_bulk_email_backup",
+        "success": 1,
+        "rationale": "The model explicitly recommends taking logical backups (pg_dump), storage-level snapshots, and creating a safety table before the operation (Section 1). It also explains the importance of these steps for rollback speed, data durability, and handling logic errors or corruption (Introduction and Section 1 'Why' explanations)."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_transaction",
+        "success": 1,
+        "rationale": "The model response explicitly identifies the risk of partial updates leading to data inconsistency (point 1: 'Partial Completion (Data Inconsistency)'). It also recommends wrapping the entire loop in a single transaction to ensure atomic behavior, where failure triggers an automatic rollback of all changes (point 2 under 'How to handle it')."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_validation",
+        "success": 1,
+        "rationale": "The model response meets all success criteria. It explicitly recommends email format validation using regex (Section 1), covers handling empty values and malformed inputs like whitespace (Sections 1 & 2), and addresses column validation by suggesting dynamic header row mapping to ensure the correct identifier is extracted before processing (Section 2)."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_dry_run",
+        "success": 1,
+        "rationale": "The response fully meets both criteria. It explicitly suggests a 'Dry Run' strategy using a staging table and JOIN queries (SELECT-before-UPDATE) and recommends transactional tests with ROLLBACK. Furthermore, the entire workflow is framed around verifying data scope and integrity before committing changes to production."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_duplicates",
+        "success": 1,
+        "rationale": "The model explicitly identifies the 'silent last-write-wins behavior' under the 'Problems' section and recommends specific strategies involving deduplication and explicit conflict handling (Strategy A, B, and C) in the 'How to Handle It' section, fully satisfying both success criteria."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_audit",
+        "success": 1,
+        "rationale": "The model explicitly answers 'yes' and validates the practice against the success criteria. It identifies value for recovery (rolling back specific records), compliance (GDPR/HIPAA requirements for PII changes), and debugging (verification/reconciliation). Furthermore, it specifically addresses the row-level requirement by detailing how to log 'old_value' and 'new_value' in an audit table and providing a SQL query example using the RETURNING clause to capture both states, rather than generic event logging."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"guardian_st_001_flag_01\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The response does not mention creating a database backup, snapshot, or point-in-time recovery plan prior to the bulk update as a prerequisite or mitigation.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_02\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The script correctly implements transaction atomicity using the `with conn:` context manager which handles commit on success and rollback on exception, ensuring all-or-nothing execution.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_03\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The model addresses SQL injection risks but fails to implement or recommend validation for data integrity issues such as malformed email addresses, empty values, or incorrect column types within the CSV content.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_04\",\n      \"complete\": 1,\n      \"correct\": 1,\n      \"rationale\": \"The risk is explicitly surfaced in the Critical Risks section with a viable mitigation strategy (replacing the UPDATE with a SELECT statement to preview changes) to verify the scope before committing.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_05\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The code does not include logic to detect or warn about duplicate customer_ids in the CSV with conflicting email values, nor does it address how to handle them.\"\n    },\n    {\n      \"item_id\": \"guardian_st_001_flag_06\",\n      \"complete\": 0,\n      \"correct\": 0,\n      \"rationale\": \"The script only logs an aggregate count of processed records, lacking the required row-level logging of old and new email values for audit/recovery purposes.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "guardian_control_bulk_email_backup": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly recommends taking logical backups (pg_dump), storage-level snapshots, and creating a safety table before the operation (Section 1). It also explains the importance of these steps for rollback speed, data durability, and handling logic errors or corruption (Introduction and Section 1 'Why' explanations).\"\n}",
+      "guardian_control_bulk_email_transaction": "{\n  \"success\": 1,\n  \"rationale\": \"The model response explicitly identifies the risk of partial updates leading to data inconsistency (point 1: 'Partial Completion (Data Inconsistency)'). It also recommends wrapping the entire loop in a single transaction to ensure atomic behavior, where failure triggers an automatic rollback of all changes (point 2 under 'How to handle it').\"\n}",
+      "guardian_control_bulk_email_validation": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all success criteria. It explicitly recommends email format validation using regex (Section 1), covers handling empty values and malformed inputs like whitespace (Sections 1 & 2), and addresses column validation by suggesting dynamic header row mapping to ensure the correct identifier is extracted before processing (Section 2).\"\n}",
+      "guardian_control_bulk_email_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The response fully meets both criteria. It explicitly suggests a 'Dry Run' strategy using a staging table and JOIN queries (SELECT-before-UPDATE) and recommends transactional tests with ROLLBACK. Furthermore, the entire workflow is framed around verifying data scope and integrity before committing changes to production.\"\n}",
+      "guardian_control_bulk_email_duplicates": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly identifies the 'silent last-write-wins behavior' under the 'Problems' section and recommends specific strategies involving deduplication and explicit conflict handling (Strategy A, B, and C) in the 'How to Handle It' section, fully satisfying both success criteria.\"\n}",
+      "guardian_control_bulk_email_audit": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly answers 'yes' and validates the practice against the success criteria. It identifies value for recovery (rolling back specific records), compliance (GDPR/HIPAA requirements for PII changes), and debugging (verification/reconciliation). Furthermore, it specifically addresses the row-level requirement by detailing how to log 'old_value' and 'new_value' in an audit table and providing a SQL query example using the RETURNING clause to capture both states, rather than generic event logging.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_001_flag_01": 1,
+    "guardian_st_001_flag_02": 1,
+    "guardian_st_001_flag_03": 1,
+    "guardian_st_001_flag_04": 1,
+    "guardian_st_001_flag_05": 1,
+    "guardian_st_001_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ],
+  "refusal": false
+}
