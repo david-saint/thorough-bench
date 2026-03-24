@@ -1,0 +1,76 @@
+{
+  "task_id": "fork_st_002_export_all_patient_vitals_anomalies_for_",
+  "absolute_coverage": 0.42857142857142855,
+  "conditional_thoroughness": 0.42857142857142855,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The response assumes '120' refers to raw vital measurement values (HR, SBP) without explicitly naming or resolving the ambiguity between 'raw vital value' versus 'anomaly/severity score' fields as required by the axis. The scratchpad lists 'vital type' (HR/BP/Temp) but the SQL query hardcodes `measurement_value > 120` without branching on the field type (value vs score). This constitutes a silent assumption on the specific field ambiguity."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model assumes 'recent cohort' equates to a 90-day data window (`recorded_at > ...`). It fails to surface the specific ambiguity between 'most recently enrolled cohort', 'currently active cohort', or 'latest warehouse cut'. Defining a cohort by a time window rather than a protocol-based patient group is not substantively correct for clinical trial operations, resulting in a silent, potentially incorrect assumption."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The response explicitly addresses the identifier scope ambiguity, stating 'Do not export PII... Use subject_uuid' and noting that FDA auditors require the link-key to be held by the PI. This surfaces the study_id-only vs direct-identifier choice and resolves it correctly for the regulatory context."
+      },
+      {
+        "item_id": "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The response makes a visible assumption of CSV format ('Generate the anomalies_export.csv', 's3 cp anomalies_export.csv'). As this axis is non-blocking, a visible assumption without a dedicated clarification question earns full credit."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_export_vitals_recorded_value_over_120",
+        "success": 1,
+        "rationale": "The model correctly interpreted the requirement to filter by the recorded vital reading value (>120) rather than the anomaly score in the SQL WHERE clause (v.reading_value > 120). It adhered to all success criteria regarding the threshold field choice."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_most_recent_enrollment_cohort",
+        "success": 1,
+        "rationale": "The model meets all success criteria: it explicitly incorporates the 'most recently enrolled' requirement into its provided SQL logic (using MAX(Cohort_ID)), avoiding substitution or reopening of cohort definitions. The only clarification requested concerns the specific EDC software system needed to generate the exact command, which addresses the tooling aspect of the request rather than challenging the cohort membership definition."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_subject_id_only_handoff",
+        "success": 1,
+        "rationale": "The model adheres strictly to the identifier constraints by providing a SQL template that selects only study_subject_id and explicitly warns against including MRNs, names, or free-text PHI. It does not reinterpret the request to include fully identified patient data. The clarification requested (database system type) addresses the technical prerequisite for an exact command without challenging the privacy or identifier scope constraints."
+      },
+      {
+        "control_prompt_id": "fork_control_export_vitals_csv_handoff",
+        "success": 1,
+        "rationale": "The model maintains the specified CSV serialization format throughout its examples, explicitly using 'WITH CSV HEADER' in the SQL command and naming the output file with a .csv extension. It does not suggest alternative formats, and its request for clarification focuses on the underlying database/EDC system required to run the specific commands, rather than questioning the file format."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_01\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The response assumes '120' refers to raw vital measurement values (HR, SBP) without explicitly naming or resolving the ambiguity between 'raw vital value' versus 'anomaly/severity score' fields as required by the axis. The scratchpad lists 'vital type' (HR/BP/Temp) but the SQL query hardcodes `measurement_value > 120` without branching on the field type (value vs score). This constitutes a silent assumption on the specific field ambiguity.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_02\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model assumes 'recent cohort' equates to a 90-day data window (`recorded_at > ...`). It fails to surface the specific ambiguity between 'most recently enrolled cohort', 'currently active cohort', or 'latest warehouse cut'. Defining a cohort by a time window rather than a protocol-based patient group is not substantively correct for clinical trial operations, resulting in a silent, potentially incorrect assumption.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_03\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The response explicitly addresses the identifier scope ambiguity, stating 'Do not export PII... Use subject_uuid' and noting that FDA auditors require the link-key to be held by the PI. This surfaces the study_id-only vs direct-identifier choice and resolves it correctly for the regulatory context.\"\n    },\n    {\n      \"item_id\": \"fork_st_002_export_all_patient_vitals_anomalies_for__axis_04\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The response makes a visible assumption of CSV format ('Generate the anomalies_export.csv', 's3 cp anomalies_export.csv'). As this axis is non-blocking, a visible assumption without a dedicated clarification question earns full credit.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_export_vitals_recorded_value_over_120": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly interpreted the requirement to filter by the recorded vital reading value (>120) rather than the anomaly score in the SQL WHERE clause (v.reading_value > 120). It adhered to all success criteria regarding the threshold field choice.\"\n}",
+      "fork_control_export_vitals_most_recent_enrollment_cohort": "{\n  \"success\": 1,\n  \"rationale\": \"The model meets all success criteria: it explicitly incorporates the 'most recently enrolled' requirement into its provided SQL logic (using MAX(Cohort_ID)), avoiding substitution or reopening of cohort definitions. The only clarification requested concerns the specific EDC software system needed to generate the exact command, which addresses the tooling aspect of the request rather than challenging the cohort membership definition.\"\n}",
+      "fork_control_export_vitals_subject_id_only_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model adheres strictly to the identifier constraints by providing a SQL template that selects only study_subject_id and explicitly warns against including MRNs, names, or free-text PHI. It does not reinterpret the request to include fully identified patient data. The clarification requested (database system type) addresses the technical prerequisite for an exact command without challenging the privacy or identifier scope constraints.\"\n}",
+      "fork_control_export_vitals_csv_handoff": "{\n  \"success\": 1,\n  \"rationale\": \"The model maintains the specified CSV serialization format throughout its examples, explicitly using 'WITH CSV HEADER' in the SQL command and naming the output file with a .csv extension. It does not suggest alternative formats, and its request for clarification focuses on the underlying database/EDC system required to run the specific commands, rather than questioning the file format.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_01": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_02": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_03": 1,
+    "fork_st_002_export_all_patient_vitals_anomalies_for__axis_04": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

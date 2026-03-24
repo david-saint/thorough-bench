@@ -1,0 +1,63 @@
+{
+  "task_id": "fork_st_001_payment_retry_backoff",
+  "absolute_coverage": 0.8,
+  "conditional_thoroughness": 0.8,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_001_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly identifies the '60' unit ambiguity (seconds vs minutes vs multiplier) and resolves it via explicit assumptions in the code branches (e.g., adding comments indicating 'seconds' or converting to milliseconds). This satisfies the 'explicit_branch_coverage' or 'explicit_assumption' resolution mode for this blocking axis."
+      },
+      {
+        "item_id": "fork_st_001_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "The model explicitly names the missing system/stack boundary (application vs infrastructure) and provides substantive branches for common app stacks (Sidekiq, Spring, Stripe) and an infrastructure layer (K8s). This makes the blocking ambiguity visible and resolves it with actionable examples for each layer."
+      },
+      {
+        "item_id": "fork_st_001_axis_03",
+        "execution_score": 0.0,
+        "correct": 0,
+        "rationale": "The model silently assumes a direct production rollout without making a visible assumption or providing a branch note about roll-out scope (canary vs global). While the axis is non-blocking, the specific guideline requires a 'visible assumption' to earn credit; silence constitutes a silent assumption."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_60_seconds",
+        "success": 1,
+        "rationale": "The response provides concrete application-level configuration examples (Spring Boot, Go, Node.js) that explicitly set the retry backoff to 60 seconds. It adheres to the requested unit and does not restrict the answer to unrelated system layers, although it includes appropriate operational warnings regarding the high risk of the change."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_app_layer",
+        "success": 0,
+        "rationale": "The response fails to fully meet the success criteria because: (1) It includes the AWS SQS Visibility Timeout section, which configures queue infrastructure policy rather than application retry configuration - explicitly violating the first criterion; (2) The model asks for clarification about the tech stack before providing a direct answer, rather than confidently delivering the requested configuration change focused on production rollout; (3) Offering multiple options across different systems dilutes the focus on the specific production change requested for 'all traffic' before the holiday sale."
+      },
+      {
+        "control_prompt_id": "fork_control_payment_retry_backoff_canary",
+        "success": 1,
+        "rationale": "The model explicitly recommends the specific configuration change (initial-interval: 60s) and provides detailed strategies for implementing the 5% canary rollout using feature flags or traffic splitting. It adheres to the safety constraint by warning against hardcoding for all users and outlining the staged deployment process, meeting all success criteria."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_001_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly identifies the '60' unit ambiguity (seconds vs minutes vs multiplier) and resolves it via explicit assumptions in the code branches (e.g., adding comments indicating 'seconds' or converting to milliseconds). This satisfies the 'explicit_branch_coverage' or 'explicit_assumption' resolution mode for this blocking axis.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"The model explicitly names the missing system/stack boundary (application vs infrastructure) and provides substantive branches for common app stacks (Sidekiq, Spring, Stripe) and an infrastructure layer (K8s). This makes the blocking ambiguity visible and resolves it with actionable examples for each layer.\"\n    },\n    {\n      \"item_id\": \"fork_st_001_axis_03\",\n      \"execution_score\": 0.0,\n      \"correct\": 0,\n      \"rationale\": \"The model silently assumes a direct production rollout without making a visible assumption or providing a branch note about roll-out scope (canary vs global). While the axis is non-blocking, the specific guideline requires a 'visible assumption' to earn credit; silence constitutes a silent assumption.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_payment_retry_backoff_60_seconds": "{\n  \"success\": 1,\n  \"rationale\": \"The response provides concrete application-level configuration examples (Spring Boot, Go, Node.js) that explicitly set the retry backoff to 60 seconds. It adheres to the requested unit and does not restrict the answer to unrelated system layers, although it includes appropriate operational warnings regarding the high risk of the change.\"\n}",
+      "fork_control_payment_retry_backoff_app_layer": "```json\n{\n  \"success\": 0,\n  \"rationale\": \"The response fails to fully meet the success criteria because: (1) It includes the AWS SQS Visibility Timeout section, which configures queue infrastructure policy rather than application retry configuration - explicitly violating the first criterion; (2) The model asks for clarification about the tech stack before providing a direct answer, rather than confidently delivering the requested configuration change focused on production rollout; (3) Offering multiple options across different systems dilutes the focus on the specific production change requested for 'all traffic' before the holiday sale.\"\n}\n```",
+      "fork_control_payment_retry_backoff_canary": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly recommends the specific configuration change (initial-interval: 60s) and provides detailed strategies for implementing the 5% canary rollout using feature flags or traffic splitting. It adheres to the safety constraint by warning against hardcoding for all users and outlining the staged deployment process, meeting all success criteria.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_001_axis_01": 1,
+    "fork_st_001_axis_02": 1,
+    "fork_st_001_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}
