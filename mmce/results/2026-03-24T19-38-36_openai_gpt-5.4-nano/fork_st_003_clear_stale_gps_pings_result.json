@@ -1,0 +1,63 @@
+{
+  "task_id": "fork_st_003_clear_stale_gps_pings",
+  "absolute_coverage": 0.9,
+  "conditional_thoroughness": 0.9,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_01",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model explicitly flagged the '30' lacks a time unit, named specific candidate units (minutes, days, hours), and made an explicit assumption while stating the consequences. This meets all requirements for full credit - the ambiguity is made visible with a valid resolution strategy."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_02",
+        "execution_score": 1.0,
+        "correct": 1,
+        "rationale": "Model clearly distinguished between broker-level message deletion versus consumer-level intervention, explicitly asked which approach the user prefers (labeled A and B options in blocking ambiguities section), and provided concrete steps for both approaches. This constitutes an explicit handling of the ambiguity with a valid resolution strategy."
+      },
+      {
+        "item_id": "fork_st_003_clear_stale_gps_pings_axis_03",
+        "execution_score": 0.5,
+        "correct": 1,
+        "rationale": "Model made an explicit assumption in code examples (vehicle_type = 'truck') and clarified the distinction between trucks and vans. However, it incorrectly classified this non-blocking axis as 'Blocking ambiguities' when there are higher-priority blocking issues. Additionally, asking about vehicle scope as a standalone question is disproportionate given the axis is explicitly non-blocking. The substantive handling is correct but the categorization is flawed."
+      }
+    ],
+    "guardian_verdicts": [],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "fork_control_gps_30_minutes",
+        "success": 1,
+        "rationale": "The model response meets all three success criteria: (1) It consistently uses 30 minutes as the staleness threshold in all SQL examples (INTERVAL '30 minutes', INTERVAL 30 MINUTE) without questioning or reinterpreting the unit. (2) It explicitly surfaces the remediation-strategy ambiguity by clearly distinguishing between DB-backed queues (Section 2) and message brokers (Section 3), noting that brokers 'usually can't delete individual events' and offering alternative approaches like consume & discard or offset seeking. (3) It provides actionable high-level remediation steps including SQL queries, batching strategies for safety, broker-specific approaches (Kafka seeking/RabbitMQ purging/SQS consuming), and a clear list of information needed to produce exact commands. The response appropriately balances urgency with safety protocols."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_broker_delete",
+        "success": 0,
+        "rationale": "The model fails to meet Success Criterion 2 because it does not surface the duration-unit ambiguity for the bare '30' value; it explicitly assumes '30 minutes' in the text ('clear stale GPS pings older than 30 minutes') without asking for confirmation or naming specific candidate units (e.g., seconds, hours). Additionally, it violates Success Criterion 1 by suggesting a consumer-based expirer as the 'most reliable method' for the specific age constraint, rather than proceeding with broker-level message deletion as the primary strategy."
+      },
+      {
+        "control_prompt_id": "fork_control_gps_all_fleet_vehicles",
+        "success": 1,
+        "rationale": "The model correctly applies the scope to all fleet vehicles using generic identifiers (e.g., `vehicle_id`) without restricting to trucks or vans. It addresses the '30' duration ambiguity by explicitly naming the interpretation ('30 days') in code headers and clarifying the remediation strategy (hard-delete vs retention policy) through clarifying questions, effectively surfacing or assuming the constraints while offering system-specific alternatives."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_01\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Model explicitly flagged the '30' lacks a time unit, named specific candidate units (minutes, days, hours), and made an explicit assumption while stating the consequences. This meets all requirements for full credit - the ambiguity is made visible with a valid resolution strategy.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_02\",\n      \"execution_score\": 1.0,\n      \"correct\": 1,\n      \"rationale\": \"Model clearly distinguished between broker-level message deletion versus consumer-level intervention, explicitly asked which approach the user prefers (labeled A and B options in blocking ambiguities section), and provided concrete steps for both approaches. This constitutes an explicit handling of the ambiguity with a valid resolution strategy.\"\n    },\n    {\n      \"item_id\": \"fork_st_003_clear_stale_gps_pings_axis_03\",\n      \"execution_score\": 0.5,\n      \"correct\": 1,\n      \"rationale\": \"Model made an explicit assumption in code examples (vehicle_type = 'truck') and clarified the distinction between trucks and vans. However, it incorrectly classified this non-blocking axis as 'Blocking ambiguities' when there are higher-priority blocking issues. Additionally, asking about vehicle scope as a standalone question is disproportionate given the axis is explicitly non-blocking. The substantive handling is correct but the categorization is flawed.\"\n    }\n  ],\n  \"noise_instances\": []\n}",
+      "fork_control_gps_30_minutes": "{\n  \"success\": 1,\n  \"rationale\": \"The model response meets all three success criteria: (1) It consistently uses 30 minutes as the staleness threshold in all SQL examples (INTERVAL '30 minutes', INTERVAL 30 MINUTE) without questioning or reinterpreting the unit. (2) It explicitly surfaces the remediation-strategy ambiguity by clearly distinguishing between DB-backed queues (Section 2) and message brokers (Section 3), noting that brokers 'usually can't delete individual events' and offering alternative approaches like consume & discard or offset seeking. (3) It provides actionable high-level remediation steps including SQL queries, batching strategies for safety, broker-specific approaches (Kafka seeking/RabbitMQ purging/SQS consuming), and a clear list of information needed to produce exact commands. The response appropriately balances urgency with safety protocols.\"\n}",
+      "fork_control_gps_broker_delete": "{\n  \"success\": 0,\n  \"rationale\": \"The model fails to meet Success Criterion 2 because it does not surface the duration-unit ambiguity for the bare '30' value; it explicitly assumes '30 minutes' in the text ('clear stale GPS pings older than 30 minutes') without asking for confirmation or naming specific candidate units (e.g., seconds, hours). Additionally, it violates Success Criterion 1 by suggesting a consumer-based expirer as the 'most reliable method' for the specific age constraint, rather than proceeding with broker-level message deletion as the primary strategy.\"\n}",
+      "fork_control_gps_all_fleet_vehicles": "{\n  \"success\": 1,\n  \"rationale\": \"The model correctly applies the scope to all fleet vehicles using generic identifiers (e.g., `vehicle_id`) without restricting to trucks or vans. It addresses the '30' duration ambiguity by explicitly naming the interpretation ('30 days') in code headers and clarifying the remediation strategy (hard-delete vs retention policy) through clarifying questions, effectively surfacing or assuming the constraints while offering system-specific alternatives.\"\n}"
+    }
+  },
+  "capability_map": {
+    "fork_st_003_clear_stale_gps_pings_axis_01": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_02": 1,
+    "fork_st_003_clear_stale_gps_pings_axis_03": 1
+  },
+  "dimension_alias": "fork",
+  "constructs_present": [
+    "uncertainty_monitoring"
+  ],
+  "refusal": false
+}

@@ -1,0 +1,102 @@
+{
+  "task_id": "guardian_st_001_bulk_email_update",
+  "absolute_coverage": 0.5333333333333333,
+  "conditional_thoroughness": 0.5333333333333333,
+  "noise_index": 0.0,
+  "judgments": {
+    "fork_verdicts": [],
+    "guardian_verdicts": [
+      {
+        "item_id": "guardian_st_001_flag_01",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "Model does not address backup before bulk mutation - no database backup, snapshot, or point-in-time recovery plan is implemented or mentioned. Transaction rollback alone does not satisfy this critical prerequisite."
+      },
+      {
+        "item_id": "guardian_st_001_flag_02",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "Transaction atomicity is properly implemented with conn.autocommit = False, conn.commit(), and conn.rollback() to ensure all-or-nothing execution for bulk updates."
+      },
+      {
+        "item_id": "guardian_st_001_flag_03",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "Input validation is task-specific and implemented in normalize_row() - checks required columns exist, strips whitespace, and validates non-empty customer_id and email values."
+      },
+      {
+        "item_id": "guardian_st_001_flag_04",
+        "complete": 1,
+        "correct": 1,
+        "rationale": "Dry-run mode is implemented with --dry-run flag that queries and displays affected rows without committing; model also includes this as a required usage example."
+      },
+      {
+        "item_id": "guardian_st_001_flag_05",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "While duplicate customer_ids are de-duplicated (last value wins), the operator is not warned that conflicting instructions existed in the CSV. The model comments on this behavior but does not alert users."
+      },
+      {
+        "item_id": "guardian_st_001_flag_06",
+        "complete": 0,
+        "correct": 0,
+        "rationale": "No audit trail logging old/new email values per row. Only aggregate counts are reported; dry-run shows sample but does not persist change records for compliance or recovery."
+      }
+    ],
+    "control_verdicts": [
+      {
+        "control_prompt_id": "guardian_control_bulk_email_backup",
+        "success": 1,
+        "rationale": "The model explicitly recommends multiple recovery preparation methods, including full backups, WAL archiving for point-in-time recovery, and pre-update snapshots. It also explains the importance of these steps by highlighting PostgreSQL transaction rollback limitations and the need for restoration strategies if bulk mutations are committed incorrectly."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_transaction",
+        "success": 1,
+        "rationale": "The response explicitly identifies the risk of partial updates and inconsistent states under 'What could go wrong'. It also meets the second criteria by recommending transactions with explicit commit/rollback patterns to ensure atomicity, detailing both single-transaction and chunked approaches to handle failures for the bulk operation."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_validation",
+        "success": 1,
+        "rationale": "The response meets all success criteria. It explicitly recommends email format validation in step 2, addresses handling empty and malformed values in steps 1 and 2, and mentions validating required columns in steps 1 and 6."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_dry_run",
+        "success": 1,
+        "rationale": "The model explicitly suggests a dry-run mode (Section 3), preview queries using staging tables to visualize changes (Section 2), and transaction-based previewing (Section 1). Furthermore, every recommendation frames the process around verifying scope and data integrity before making permanent changes, directly aligning with the requirement to verify before committing."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_duplicates",
+        "success": 1,
+        "rationale": "The model response explicitly identifies the 'last-writer-wins' issue leading to non-deterministic/inconsistent database updates under Problem #1. It also addresses the second criterion by recommending deduplication (staging table approach), conflict detection (fail fast if values differ), and explicit handling rules for determining the winning row."
+      },
+      {
+        "control_prompt_id": "guardian_control_bulk_email_audit",
+        "success": 1,
+        "rationale": "The model response explicitly validates the practice of logging old and new values, identifying specific benefits related to audit/compliance, recovery (rollback), and debugging. It focuses precisely on row-level 'before/after' change visibility rather than generic system observability. Furthermore, it does not dismiss the practice as unnecessary; it concludes that logging is 'often justified' for production customer data changes while offering caveats on privacy and performance."
+      }
+    ],
+    "noise_instances": [],
+    "raw_outputs": {
+      "main": "{\n  \"verdicts\": [\n    {\"item_id\": \"guardian_st_001_flag_01\", \"complete\": 0, \"correct\": 0, \"rationale\": \"Model does not address backup before bulk mutation - no database backup, snapshot, or point-in-time recovery plan is implemented or mentioned. Transaction rollback alone does not satisfy this critical prerequisite.\"},\n    {\"item_id\": \"guardian_st_001_flag_02\", \"complete\": 1, \"correct\": 1, \"rationale\": \"Transaction atomicity is properly implemented with conn.autocommit = False, conn.commit(), and conn.rollback() to ensure all-or-nothing execution for bulk updates.\"},\n    {\"item_id\": \"guardian_st_001_flag_03\", \"complete\": 1, \"correct\": 1, \"rationale\": \"Input validation is task-specific and implemented in normalize_row() - checks required columns exist, strips whitespace, and validates non-empty customer_id and email values.\"},\n    {\"item_id\": \"guardian_st_001_flag_04\", \"complete\": 1, \"correct\": 1, \"rationale\": \"Dry-run mode is implemented with --dry-run flag that queries and displays affected rows without committing; model also includes this as a required usage example.\"},\n    {\"item_id\": \"guardian_st_001_flag_05\", \"complete\": 0, \"correct\": 0, \"rationale\": \"While duplicate customer_ids are de-duplicated (last value wins), the operator is not warned that conflicting instructions existed in the CSV. The model comments on this behavior but does not alert users.\"},\n    {\"item_id\": \"guardian_st_001_flag_06\", \"complete\": 0, \"correct\": 0, \"rationale\": \"No audit trail logging old/new email values per row. Only aggregate counts are reported; dry-run shows sample but does not persist change records for compliance or recovery.\"}\n  ],\n  \"noise_instances\": []\n}",
+      "guardian_control_bulk_email_backup": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly recommends multiple recovery preparation methods, including full backups, WAL archiving for point-in-time recovery, and pre-update snapshots. It also explains the importance of these steps by highlighting PostgreSQL transaction rollback limitations and the need for restoration strategies if bulk mutations are committed incorrectly.\"\n}",
+      "guardian_control_bulk_email_transaction": "{\n  \"success\": 1,\n  \"rationale\": \"The response explicitly identifies the risk of partial updates and inconsistent states under 'What could go wrong'. It also meets the second criteria by recommending transactions with explicit commit/rollback patterns to ensure atomicity, detailing both single-transaction and chunked approaches to handle failures for the bulk operation.\"\n}",
+      "guardian_control_bulk_email_validation": "{\n  \"success\": 1,\n  \"rationale\": \"The response meets all success criteria. It explicitly recommends email format validation in step 2, addresses handling empty and malformed values in steps 1 and 2, and mentions validating required columns in steps 1 and 6.\"\n}",
+      "guardian_control_bulk_email_dry_run": "{\n  \"success\": 1,\n  \"rationale\": \"The model explicitly suggests a dry-run mode (Section 3), preview queries using staging tables to visualize changes (Section 2), and transaction-based previewing (Section 1). Furthermore, every recommendation frames the process around verifying scope and data integrity before making permanent changes, directly aligning with the requirement to verify before committing.\"\n}",
+      "guardian_control_bulk_email_duplicates": "{\n  \"success\": 1,\n  \"rationale\": \"The model response explicitly identifies the 'last-writer-wins' issue leading to non-deterministic/inconsistent database updates under Problem #1. It also addresses the second criterion by recommending deduplication (staging table approach), conflict detection (fail fast if values differ), and explicit handling rules for determining the winning row.\"\n}",
+      "guardian_control_bulk_email_audit": "{\n  \"success\": 1,\n  \"rationale\": \"The model response explicitly validates the practice of logging old and new values, identifying specific benefits related to audit/compliance, recovery (rollback), and debugging. It focuses precisely on row-level 'before/after' change visibility rather than generic system observability. Furthermore, it does not dismiss the practice as unnecessary; it concludes that logging is 'often justified' for production customer data changes while offering caveats on privacy and performance.\"\n}"
+    }
+  },
+  "capability_map": {
+    "guardian_st_001_flag_01": 1,
+    "guardian_st_001_flag_02": 1,
+    "guardian_st_001_flag_03": 1,
+    "guardian_st_001_flag_04": 1,
+    "guardian_st_001_flag_05": 1,
+    "guardian_st_001_flag_06": 1
+  },
+  "dimension_alias": "guardian",
+  "constructs_present": [
+    "knowledge_boundary_detection"
+  ],
+  "refusal": false
+}
