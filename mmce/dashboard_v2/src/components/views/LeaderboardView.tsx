@@ -9,6 +9,7 @@ interface LeaderboardViewProps {
 }
 
 interface LeaderboardRow {
+  runId: string;
   model: string;
   promptVariant: string;
   overallScore: number;
@@ -30,7 +31,7 @@ interface TaskDetailRow {
 }
 
 export default function LeaderboardView({ data }: LeaderboardViewProps) {
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
 
   const leaderboardData = useMemo(() => {
     if (!data.runs.length) return [];
@@ -47,6 +48,7 @@ export default function LeaderboardView({ data }: LeaderboardViewProps) {
       const avgNi = modelTasks.length ? modelTasks.reduce((acc, t) => acc + t.ni, 0) / modelTasks.length : 0;
 
       return {
+        runId: run.run_id,
         model: run.model,
         promptVariant: run.prompt_variant,
         overallScore: run.composite_ct,
@@ -62,15 +64,15 @@ export default function LeaderboardView({ data }: LeaderboardViewProps) {
   }, [data]);
 
   const taskDetailsData = useMemo(() => {
-    if (!selectedModel) return [];
-    return data.tasks.filter(t => t.model === selectedModel).map(t => ({
+    if (!selectedRunId) return [];
+    return data.tasks.filter(t => t.run_id === selectedRunId).map(t => ({
       task: t.task_id,
       dimension: t.dimension,
       ac: t.ac,
       ct: t.ct,
       ni: t.ni,
     }));
-  }, [data, selectedModel]);
+  }, [data, selectedRunId]);
 
   const renderBar = (val: number, max: number, colorClass: string) => {
     const pct = Math.max(0, Math.min(100, (val / max) * 100));
@@ -174,6 +176,10 @@ export default function LeaderboardView({ data }: LeaderboardViewProps) {
     return <div className="p-8 text-ink-light font-serif">No results found for selected runs.</div>;
   }
 
+  const selectedModelName = useMemo(() => {
+    return leaderboardData.find(r => r.runId === selectedRunId)?.model;
+  }, [leaderboardData, selectedRunId]);
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -186,15 +192,15 @@ export default function LeaderboardView({ data }: LeaderboardViewProps) {
       <DataTable<LeaderboardRow>
         data={leaderboardData}
         columns={leaderboardColumns}
-        getRowKey={(r, idx) => r.model}
+        getRowKey={(r, idx) => r.runId}
         initialSort={{ key: 'overallScore', direction: 'desc' }}
-        onRowClick={(r) => setSelectedModel(r.model === selectedModel ? null : r.model)}
-        selectedRowKey={selectedModel || undefined}
+        onRowClick={(r) => setSelectedRunId(r.runId === selectedRunId ? null : r.runId)}
+        selectedRowKey={selectedRunId || undefined}
       />
 
-      {selectedModel && (
+      {selectedRunId && (
         <div className="border border-faint bg-white p-6 mt-4">
-          <h3 className="font-serif text-lg font-semibold mb-4">Per-Task Scores: {selectedModel}</h3>
+          <h3 className="font-serif text-lg font-semibold mb-4">Per-Task Scores: {selectedModelName}</h3>
           <DataTable<TaskDetailRow>
             data={taskDetailsData}
             columns={taskColumns}
