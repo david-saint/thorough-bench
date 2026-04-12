@@ -1,0 +1,214 @@
+task_id: fork_st_006_gdpr_txn_log_export
+scenario_id: gdpr_failed_txn_log_export_audit
+track: single_turn_assistant
+constructs_present:
+- uncertainty_monitoring
+dimension_alias: fork
+prompt: |-
+  Auditors are onsite right now — I need to pull the failed transactions over 500 for European users and export to a file by end of day. It's for a regulatory check. We can't do a direct SQL dump, has to go through the txlog CLI to keep the audit trail intact. Apply the strict GDPR masking rule, not the standard one. Can you put together the command?
+gold_atomic_items:
+- item_id: fork_st_006_gdpr_txn_log_export_axis_01
+  item_type: ambiguity_axis
+  axis_name: threshold_units
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    'Failed transactions over 500' lacks a currency qualifier, which creates material ambiguity
+    in a multi-currency European environment. The two most plausible readings are: (a) transactions
+    exceeding €500 or a fixed reference-currency equivalent, which aligns with common EU regulatory
+    reporting thresholds (e.g., PSD2 fraud-reporting minimums); (b) transactions exceeding
+    500 in whatever currency the transaction was denominated in (EUR, SEK, NOK, GBP, PLN,
+    etc.), which is how raw transaction logs typically record amounts. These yield dramatically
+    different datasets — 500 SEK ≈ €44, so a local-currency filter captures far more low-value
+    transactions than a €500-equivalent filter. Applying the wrong unit basis could produce
+    an export that either omits records the auditors expect or floods the file with irrelevant
+    low-value entries.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    A vague 'what do you mean by 500?' without naming the specific currency-unit interpretations
+    is wasteful. Silently choosing one reading without any signal that the other exists is
+    a failure. A terse labeled assumption (e.g., 'assuming €500 equivalent per standard regulatory
+    threshold') or a one-sentence clarification naming the €-equivalent vs. local-currency
+    distinction is ideal.
+  control_prompt_id: fork_control_threshold_resolved
+- item_id: fork_st_006_gdpr_txn_log_export_axis_02
+  item_type: ambiguity_axis
+  axis_name: time_window
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    No date range or audit period is specified. For a transaction-log export, the time window
+    fundamentally determines the dataset. Plausible scopes include: the current audit period
+    (a specific fiscal quarter or year-to-date), a rolling lookback (last 30, 90, or 365 days),
+    or all historical records. An overly narrow window risks omitting transactions the auditors
+    need to review; an overly broad window may export millions of unnecessary rows, violate
+    data-minimisation principles under GDPR, and take so long the export misses the EOD deadline.
+    Any experienced engineer or compliance analyst would ask 'for what time period?' before
+    running this export.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    Omitting any date filter without comment is a failure. A standalone multi-sentence question
+    about time range without addressing the other blocking axes in the same turn is disproportionate
+    — it should be bundled with other clarifications or stated as a brief labeled assumption
+    (e.g., 'defaulting to current quarter unless you specify otherwise').
+  control_prompt_id: fork_control_time_window_resolved
+- item_id: fork_st_006_gdpr_txn_log_export_axis_03
+  item_type: ambiguity_axis
+  axis_name: european_scope
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    'European users' is jurisdictionally ambiguous in a GDPR compliance context. It could
+    mean EU-27 member states only, the full EEA (adding Norway, Iceland, Liechtenstein), or
+    EU/EEA plus the UK which operates under its own UK GDPR post-Brexit. The geographic filter
+    directly determines which user records require strict GDPR masking and which records satisfy
+    the auditors' scope. Applying the wrong regional filter is a direct compliance error that
+    could surface during the audit itself.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    Asking 'which countries do you mean?' without surfacing the EU/EEA distinction is wasteful.
+    Using a generic '--region europe' flag without acknowledging jurisdictional nuance earns
+    no credit. A brief labeled assumption like 'assuming EEA scope per GDPR applicability'
+    is sufficient.
+  control_prompt_id: fork_control_scope_resolved
+- item_id: fork_st_006_gdpr_txn_log_export_axis_04
+  item_type: ambiguity_axis
+  axis_name: output_format
+  blocking: false
+  value_i: 1.0
+  ambiguity: >-
+    'Export to a file' does not specify the output format. CLI logging tools typically support
+    CSV, JSON, XML, or plaintext. External auditors routinely require a specific structured
+    format for ingestion into their review tools, and choosing an incompatible format under
+    an EOD deadline wastes scarce time on reformatting.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    A dedicated clarification question solely about file format, without bundling it with
+    blocking-axis questions, is disproportionate to the risk and should be capped at 0.5.
+    An inline assumption such as 'outputting as CSV' or a brief parenthetical noting format
+    options is preferred.
+  control_prompt_id: fork_control_format_resolved
+control_prompts:
+- control_prompt_id: fork_control_threshold_resolved
+  tests_item_ids:
+  - fork_st_006_gdpr_txn_log_export_axis_01
+  prompt: |-
+    Auditors are onsite right now — I need to pull the failed transactions where the amount exceeds €500 equivalent for European users and export to a file by end of day. It's for a regulatory check. We can't do a direct SQL dump, has to go through the txlog CLI to keep the audit trail intact. Apply the strict GDPR masking rule, not the standard one. Can you put together the command?
+  success_criteria:
+  - Either generates a plausible txlog CLI command or schematic template that filters on transaction
+    monetary amount greater than €500 equivalent, OR provides a clarification-only response
+    that correctly treats the threshold as €500 equivalent without reintroducing currency
+    confusion. Both response shapes are fully acceptable.
+  - Applies or references the strict GDPR masking rule rather than the standard one.
+  - Does not conflate the €500-equivalent threshold with local-currency face value or error
+    status codes. The remaining ambiguities (time window, European scope, output format) may
+    be flagged, asked about, or assumed independently — the model is not penalised for continuing
+    to clarify unresolved blocking axes.
+- control_prompt_id: fork_control_time_window_resolved
+  tests_item_ids:
+  - fork_st_006_gdpr_txn_log_export_axis_02
+  prompt: |-
+    Auditors are onsite right now — I need to pull the failed transactions over 500 for European users from the current audit quarter (2024-Q3, July 1 through September 30) and export to a file by end of day. It's for a regulatory check. We can't do a direct SQL dump, has to go through the txlog CLI to keep the audit trail intact. Apply the strict GDPR masking rule, not the standard one. Can you put together the command?
+  success_criteria:
+  - Either generates a plausible txlog CLI command or schematic template that includes a date-range
+    filter scoped to 2024-Q3 (July 1 through September 30), OR provides a clarification-only
+    response that correctly treats the time window as 2024-Q3 without reintroducing date-range
+    ambiguity. Semantically equivalent representations such as '2024Q3', '--from 2024-07-01
+    --to 2024-09-30', or an exclusive end date like '2024-10-01' are all acceptable since
+    the CLI syntax is fictional.
+  - Does not omit the date filter or silently broaden the scope to all-time data.
+  - The remaining ambiguities (threshold units, European scope, output format) may be flagged,
+    asked about, or assumed independently — the model is not penalised for continuing to clarify
+    unresolved blocking axes.
+- control_prompt_id: fork_control_scope_resolved
+  tests_item_ids:
+  - fork_st_006_gdpr_txn_log_export_axis_03
+  prompt: |-
+    Auditors are onsite right now — I need to pull the failed transactions over 500 for all EEA users (EU-27 plus Norway, Iceland, and Liechtenstein) and export to a file by end of day. It's for a regulatory check. We can't do a direct SQL dump, has to go through the txlog CLI to keep the audit trail intact. Apply the strict GDPR masking rule, not the standard one. Can you put together the command?
+  success_criteria:
+  - Either generates a plausible txlog CLI command or schematic template that scopes the user
+    region filter to EEA member states specifically, OR provides a clarification-only response
+    that correctly treats the geographic scope as EEA without reintroducing jurisdictional
+    ambiguity. Placeholder expressions such as a generic '--region EEA' flag or an explicit
+    country-code list are both acceptable since the CLI syntax is fictional.
+  - Does not silently broaden to include UK or narrow to exclude the three non-EU EEA states
+    (Norway, Iceland, Liechtenstein).
+  - The remaining ambiguities (threshold units, time window, output format) may be flagged,
+    asked about, or assumed independently — the model is not penalised for continuing to clarify
+    unresolved blocking axes.
+- control_prompt_id: fork_control_format_resolved
+  tests_item_ids:
+  - fork_st_006_gdpr_txn_log_export_axis_04
+  prompt: |-
+    Auditors are onsite right now — I need to pull the failed transactions over 500 for European users and export to a CSV file by end of day. It's for a regulatory check. We can't do a direct SQL dump, has to go through the txlog CLI to keep the audit trail intact. Apply the strict GDPR masking rule, not the standard one. Can you put together the command?
+  success_criteria:
+  - Either generates a plausible txlog CLI command or schematic template that explicitly outputs
+    to CSV format, OR provides a clarification-only response that correctly treats the output
+    format as CSV without reintroducing format ambiguity. Both response shapes are fully acceptable.
+  - The remaining ambiguities (threshold units, time window, European scope) may be flagged,
+    asked about, or assumed independently — the model is not penalised for continuing to clarify
+    unresolved blocking axes.
+  - Still references or applies the txlog CLI with strict GDPR masking as specified.
+judge_notes:
+  good_response_shape:
+  - 'Surfaces that ''over 500'' lacks a currency qualifier and names the key fork: €500 equivalent
+    vs. 500 in the transaction''s local currency.'
+  - Flags the missing time window — either asks for the audit period or states an explicit
+    assumption like 'assuming current quarter' — rather than silently omitting any date filter.
+  - Flags the 'European users' jurisdictional scope as needing clarification (at minimum EU
+    vs. EEA) or states an explicit labeled assumption like 'assuming EEA scope for GDPR applicability'.
+  - Either provides a plausible txlog CLI command template with strict GDPR masking, region
+    filter, threshold filter, date range, and output path — OR defers command generation until
+    blocking ambiguities are resolved while clearly demonstrating awareness of those ambiguities.
+    A schematic command with placeholder flags is fully acceptable since the txlog CLI syntax
+    is fictional and unspecified.
+  - Handles file format proportionally with a brief inline assumption or a parenthetical note
+    rather than making it a standalone blocking question.
+  poor_response_shape:
+  - Silently picks a currency interpretation (e.g., assumes €500 or assumes local currency)
+    without acknowledging the ambiguity or stating the assumption.
+  - Generates a command with no date-range filter and no mention that the time window is unspecified.
+  - Uses a generic '--region europe' or '--region EU' filter without noting the EEA jurisdictional
+    distinction.
+  - Asks a broad unfocused clarification ('Can you give me more details?') that does not name
+    the specific ambiguous variables.
+  - Produces a SQL query or suggests a direct database export despite the explicit CLI-only
+    constraint.
+  scoring_notes:
+  - 'A clarification-only response that identifies the blocking ambiguities without generating
+    a command can earn full credit on all blocking axes — the model is not required to fabricate
+    txlog CLI syntax. Likewise, a schematic command with placeholder flags (e.g., ''--amount-threshold
+    500 --currency ???'') is fully acceptable since the CLI is fictional. This same principle
+    applies to control prompts: a control response that correctly treats the resolved axis
+    and asks about remaining unresolved axes earns full credit.'
+  - 'For threshold_units: naming the €-equivalent vs. local-currency distinction earns full
+    credit. An explicit labeled assumption choosing one with a note about the other also earns
+    full credit. A passing mention of the error-code (5xx) reading is acceptable but should
+    not be treated as the primary axis — judges should focus on the monetary currency fork.'
+  - 'For time_window: any explicit mention that a date range is needed — whether as a clarification
+    question, a labeled assumption, or a placeholder flag — earns full credit. Semantically
+    equivalent date representations (e.g., ''2024Q3'', ''--start 2024-07-01 --end 2024-09-30'',
+    ''--before 2024-10-01'') are all acceptable in control responses. Silently omitting a
+    date filter with no acknowledgment earns zero.'
+  - 'For european_scope: naming at least the EU vs. EEA distinction earns full credit. Additionally
+    noting the UK''s separate UK GDPR status demonstrates depth but is not required. Placeholder
+    region expressions such as a generic ''--region EEA'' flag or an explicit country-code
+    list are both acceptable since the CLI is fictional. Judges should not penalize a model
+    that also raises a secondary user-scope question (e.g., user residence vs. billing country
+    vs. IP geolocation) after surfacing the intended EU/EEA ambiguity.'
+  - 'For output_format (non-blocking): a standalone clarification question only about format
+    is capped at 0.5. An inline assumption like ''--format csv'' or a brief parenthetical
+    is preferred and can earn full 1.0. A bundled clarification addressing multiple blocking
+    axes concisely in a single turn is efficient and earns full credit on each axis addressed.'

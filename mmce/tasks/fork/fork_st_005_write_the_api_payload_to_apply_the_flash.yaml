@@ -1,0 +1,191 @@
+task_id: fork_st_005_write_the_api_payload_to_apply_the_flash
+scenario_id: influencer_flash_sale_vip_discount
+track: single_turn_assistant
+constructs_present:
+- uncertainty_monitoring
+dimension_alias: fork
+prompt: |-
+  Hey, can you write the API payload or call sequence to apply the flash sale discount of 20 to all VIP carts? Needs to be active right away and run until midnight tonight (June 12, 2025). Need to override any existing promos on those carts. This is the influencer collab sale — marketing literally just dropped this on us and we need it deployed now. We have to use the promo engine admin REST API, no direct DB changes allowed.
+gold_atomic_items:
+- item_id: fork_st_005_write_the_api_payload_to_apply_the_flash_axis_01
+  item_type: ambiguity_axis
+  axis_name: discount_unit
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    The bare value '20' is materially ambiguous: it could mean 20 percent off or a flat $20
+    (or equivalent currency) deduction. For VIP carts that might average $300–$500, a 20%
+    discount yields $60–$100 off versus a flat $20, differing by an order of magnitude in
+    revenue impact. Promotion engine APIs typically require an explicit discount-type parameter
+    distinguishing percentage from fixed-amount discounts.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    Silently choosing percent or flat amount without acknowledging the ambiguity is a miss.
+    Asking a vague 'can you clarify the discount?' without naming the two plausible interpretations
+    is wasteful. A concise question naming both options, or an explicit labeled assumption,
+    or short branched payloads for both are all acceptable.
+  control_prompt_id: fork_control_flash_sale_discount_percent
+- item_id: fork_st_005_write_the_api_payload_to_apply_the_flash_axis_02
+  item_type: ambiguity_axis
+  axis_name: override_semantics
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    'Overriding existing promos' has at least two distinct API-level meanings: (a) creating
+    the new promotion with an exclusive or highest-priority flag so it wins the engine's conflict
+    resolution at checkout time, leaving other promos technically active but suppressed; or
+    (b) first deactivating or disabling existing active promotions scoped to VIP carts via
+    separate API calls, then creating the new one. These produce different call sequences,
+    different rollback stories, and very different post-sale cleanup requirements.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    Including a generic 'override: true' field in the payload without explaining whether this
+    means exclusivity/priority or deactivation of existing rules is insufficient. A long tutorial
+    on promotion stacking theory without tying it to the concrete API call decision is wasteful.
+    The response must name the specific interpretive fork and its operational consequences.
+  control_prompt_id: fork_control_flash_sale_exclusive_flag
+- item_id: fork_st_005_write_the_api_payload_to_apply_the_flash_axis_03
+  item_type: ambiguity_axis
+  axis_name: expiry_timezone
+  blocking: false
+  value_i: 1.0
+  ambiguity: >-
+    'Until midnight tonight' does not specify a timezone. For a globally accessible e-commerce
+    platform, midnight UTC (2025-06-13T00:00:00Z) versus midnight in the company's local timezone
+    (e.g., US Eastern, 2025-06-13T04:00:00Z) could shift the promotion expiry window by 3–8
+    hours, affecting both customer experience and total revenue exposure for a time-sensitive
+    flash sale.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    Because this axis is non-blocking, a dedicated clarification question solely about timezone
+    is usually wasteful and should be capped at 0.5. However, bundling the timezone question
+    with one or both blocking axis clarifications is not capped and earns full credit. A quick
+    inline assumption such as 'assuming midnight UTC' or 'assuming midnight US-Eastern' alongside
+    the ISO 8601 timestamp in the payload is preferred. Omitting timezone entirely from the
+    expiry field is a miss.
+  control_prompt_id: fork_control_flash_sale_midnight_utc
+control_prompts:
+- control_prompt_id: fork_control_flash_sale_discount_percent
+  tests_item_ids:
+  - fork_st_005_write_the_api_payload_to_apply_the_flash_axis_01
+  prompt: |-
+    Hey, can you write the API payload or call sequence to apply a 20 percent off flash sale discount to all VIP carts? Needs to be active right away and run until midnight tonight (June 12, 2025). Need to override any existing promos on those carts. This is the influencer collab sale — marketing literally just dropped this on us and we need it deployed now. We have to use the promo engine admin REST API, no direct DB changes allowed.
+  success_criteria:
+  - The response treats the discount as a percentage (not a flat currency amount); any payload,
+    pseudo-payload, or descriptive text consistently reflects a 20-percent-off semantic regardless
+    of the specific field names or schema used.
+  - Does not reinterpret or question the discount unit, since it has been disambiguated in
+    the prompt.
+  - Because override semantics and timezone remain ambiguous, a response that surfaces those
+    remaining ambiguities through clarifying questions, explicit assumptions, or branched
+    variants—even without producing a finalized payload—is fully acceptable.
+- control_prompt_id: fork_control_flash_sale_exclusive_flag
+  tests_item_ids:
+  - fork_st_005_write_the_api_payload_to_apply_the_flash_axis_02
+  prompt: |-
+    Hey, can you write the API payload or call sequence to apply the flash sale discount of 20 to all VIP carts? Needs to be active right away and run until midnight tonight (June 12, 2025). Set the promotion as exclusive so it takes precedence over any other active promos at checkout — don't deactivate the existing ones. This is the influencer collab sale — marketing literally just dropped this on us and we need it deployed now. We have to use the promo engine admin REST API, no direct DB changes allowed.
+  success_criteria:
+  - The response uses an exclusivity or highest-priority mechanism (however named in the chosen
+    schema) rather than a multi-step workflow that first deactivates or disables existing
+    promo rules.
+  - Does not introduce separate API calls to disable or remove existing promotions, since
+    the prompt explicitly says to leave them active.
+  - Because discount unit and timezone remain ambiguous, a response that surfaces those remaining
+    ambiguities through clarifying questions, explicit assumptions, or branched variants—even
+    without producing a finalized payload—is fully acceptable.
+- control_prompt_id: fork_control_flash_sale_midnight_utc
+  tests_item_ids:
+  - fork_st_005_write_the_api_payload_to_apply_the_flash_axis_03
+  prompt: |-
+    Hey, can you write the API payload or call sequence to apply the flash sale discount of 20 to all VIP carts? Needs to be active right away and run until midnight UTC tonight (2025-06-13T00:00:00Z). Need to override any existing promos on those carts. This is the influencer collab sale — marketing literally just dropped this on us and we need it deployed now. We have to use the promo engine admin REST API, no direct DB changes allowed.
+  success_criteria:
+  - Uses 2025-06-13T00:00:00Z (or an equivalent UTC representation such as 2025-06-13T00:00:00+00:00)
+    as the expiry timestamp wherever an end-time appears in the response, regardless of the
+    specific field name used.
+  - Does not substitute a different timezone or omit the timezone qualifier from the timestamp.
+  - Because discount unit and override semantics remain ambiguous, a response that surfaces
+    those remaining ambiguities through clarifying questions, explicit assumptions, or branched
+    variants—even without producing a finalized payload—is fully acceptable.
+judge_notes:
+  good_response_shape:
+  - Identifies the discount unit ambiguity (percent vs flat amount) before or alongside presenting
+    a payload, either by asking, assuming explicitly, or branching. If the model explores
+    the flat-amount branch, a brief follow-up about currency is acceptable and should not
+    be penalized as off-task.
+  - Names the override semantics fork explicitly — exclusive/priority flag vs deactivation
+    of existing promos — and either asks, assumes with justification, or provides both variants
+    as different call sequences. The focus should be on the exclusive-vs-deactivate distinction
+    rather than on deletion of promo records, which is operationally atypical.
+  - Includes a timezone-qualified ISO 8601 timestamp for midnight on the night of June 12–13,
+    2025 (e.g., 2025-06-13T00:00:00Z or 2025-06-13T04:00:00Z for US-Eastern) in the expiry
+    field, either via a stated assumption or a brief note about the missing information.
+  - Provides a plausible JSON payload or multi-step pseudo-call-sequence consistent with a
+    promotion engine admin REST API (e.g., POST to a promotions-style endpoint with fields
+    for scope, discount, priority, and schedule). Generic or placeholder endpoint names and
+    field names are fully acceptable as long as the semantics are correct, since the specific
+    API schema is intentionally unspecified.
+  - Keeps the response concise and actionable given the stated urgency rather than writing
+    an essay.
+  poor_response_shape:
+  - Produces a complete payload with a discount value of 20 without stating or questioning
+    whether it is percent or flat amount.
+  - Silently picks one override approach (e.g., exclusive flag or deactivation workflow) without
+    mentioning that the other interpretation exists.
+  - Uses a bare 'midnight' string, a dateless timestamp, or a timestamp without timezone qualifier
+    in the expiry field with no assumption stated.
+  - Asks a broad catch-all question like 'Can you tell me more about the requirements?' or
+    'What's your tech stack?' instead of naming the specific ambiguous parameters.
+  - Spends most of the answer on general REST API best practices, authentication advice, or
+    deployment warnings rather than addressing the concrete ambiguities in the request.
+  scoring_notes:
+  - A targeted clarifying question that names both discount unit options (percent vs flat)
+    earns full credit on axis_01. An explicit assumption labeling the chosen interpretation
+    and naming the alternative also earns full credit. A silent choice with no acknowledgment
+    earns 0. A response that only asks the targeted blocking clarification(s) without drafting
+    a payload can still earn full credit on ambiguity axes; the payload is expected but its
+    absence does not reduce credit for correctly identifying ambiguities.
+  - An explicit branch showing two payload variants — one using an exclusive/priority flag,
+    one using a deactivate-then-create call sequence — earns full credit on axis_02. A single
+    approach with a labeled assumption also earns full credit if the alternative is named.
+    The two canonical interpretations are (a) exclusive/priority and (b) deactivate/disable
+    existing promos; framing the second option as 'delete' rather than 'deactivate/disable'
+    is acceptable but slightly less precise.
+  - An inline assumption like 'assuming midnight UTC, i.e. 2025-06-13T00:00:00Z' in the expiry
+    timestamp earns full credit on the non-blocking axis_03. A standalone question dedicated
+    solely to timezone is capped at 0.5 for that axis. However, bundling the timezone question
+    with one or both blocking axis clarifications is not capped and earns full credit on axis_03.
+  - 'A bundled clarification covering both blocking axes concisely earns full credit on both.
+    For example: ''Quick check before I finalize — is the 20 a percentage or a flat dollar
+    amount, and should we set the new promo as exclusive-priority or deactivate the existing
+    promos first?'' Adding unrelated questions (e.g., ''what language is your backend in?'')
+    dilutes quality and may indicate lack of focus.'
+  - The prompt specifies the sale should be 'active right away,' so models should use an immediate
+    or current-time start value. A model should not be penalized for using now/immediate as
+    the start time, nor should it receive extra credit for questioning the start time. Producing
+    a syntactically valid JSON payload or call sequence is expected baseline behavior and
+    does not substitute for surfacing the material ambiguities. Generic or placeholder field
+    names and endpoint paths are fully acceptable; the judge should evaluate semantic correctness,
+    not schema fidelity. A well-structured payload that silently picks wrong values is worse
+    than a brief payload sketch that flags the unknowns.
+task_class: calibration_anchor
+calibration_anchor: true
+anchor_reason: >-
+  This is a high-stakes, time-pressured Fork task. Choosing the wrong discount type (percent
+  vs flat) on VIP carts during a flash sale could cost the company significant revenue or
+  create PR problems. The wrong override approach could either fail to suppress competing
+  promos at checkout or accidentally disable promotion rules needed after the sale ends. The
+  timezone gap compounds these risks by potentially extending or truncating the sale window
+  by hours.
+control_family_ids:
+- fork_discount_unit_value
+- fork_override_semantics_promo
+- fork_expiry_timezone_midnight

@@ -1,0 +1,237 @@
+task_id: fork_st_004_iac_autoscaling_fix
+scenario_id: runaway_autoscaling_overnight_terraform_fix
+track: single_turn_assistant
+constructs_present:
+- uncertainty_monitoring
+dimension_alias: fork
+prompt: |-
+  A rogue background process misfired overnight and kicked off massive horizontal scaling — we're hemorrhaging AWS credits. I need a Terraform snippet that updates our autoscaling to scale down nodes idle for more than 15, and also caps the default container memory limit at 256 so nothing balloons like that again. Strictly declarative Terraform, and do NOT touch the existing GPU node group configs.
+gold_atomic_items:
+- item_id: fork_st_004_iac_autoscaling_fix_axis_01
+  item_type: ambiguity_axis
+  axis_name: idle_duration_unit
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    'Scale down nodes idle for more than 15' omits the time unit. In the Kubernetes Cluster
+    Autoscaler, --scale-down-unneeded-time accepts a Go duration string where '15s' and '15m'
+    differ by 60×; the default is 10m, making 15m a plausible conservative tuning while 15s
+    would aggressively terminate nodes before workloads can reschedule. In an ASG-backed approach,
+    a step-scaling or target-tracking policy tied to a CloudWatch low-utilization alarm evaluates
+    over a configurable window — 15 one-minute datapoints (15 minutes) is standard, while
+    a 15-second window falls below the minimum CloudWatch standard-resolution period. The
+    60× gap between seconds and minutes determines whether the cluster stabilizes or enters
+    a destructive scale-out/scale-in flapping loop during incident recovery.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    Silently writing Terraform with 15 seconds or 15 minutes without flagging the ambiguity
+    is harmful. A targeted question such as 'Do you mean 15 seconds or 15 minutes?' is ideal.
+    Burying the unit question inside a broad multi-topic interrogation covering more than
+    three unrelated parameters is wasteful.
+  control_prompt_id: fork_control_idle_unit_resolved
+- item_id: fork_st_004_iac_autoscaling_fix_axis_02
+  item_type: ambiguity_axis
+  axis_name: memory_cap_unit
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    'Caps the default container memory limit at 256' omits the unit suffix. In Kubernetes
+    resource specifications — whether expressed in a LimitRange default or a pod spec — a
+    bare integer '256' means 256 bytes, which would OOM-kill any container instantly. A unit
+    suffix is required: 256Mi (mebibytes, ~268 MB) is the standard for typical containerized
+    services, 256M (decimal megabytes) is syntactically valid but less idiomatic, and 256Gi
+    is conceivable for memory-intensive workloads but unlikely as a cost-cutting cap. In a
+    Helm values file, whether a bare '256' is interpreted as bytes depends on how the chart
+    template renders it into a Kubernetes quantity field, so an explicit suffix remains the
+    only safe choice. Any Terraform emitting a bare 256 into a Kubernetes quantity field will
+    produce a catastrophically wrong limit of 256 bytes.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    Silently writing '256' as a bare value or picking a specific suffix without acknowledging
+    the ambiguity is harmful. A concise clarification confirming whether the user means 256Mi
+    or another unit is preferred. Providing a tutorial on all Kubernetes quantity suffixes
+    (Ki through Ei) rather than narrowing to the two or three plausible options is excessive.
+  control_prompt_id: fork_control_memory_unit_resolved
+- item_id: fork_st_004_iac_autoscaling_fix_axis_03
+  item_type: ambiguity_axis
+  axis_name: scaling_layer
+  blocking: true
+  value_i: 2.0
+  ambiguity: >-
+    'Updates our autoscaling to scale down nodes' is ambiguous across at least two node-level
+    autoscaling systems in an EKS environment. The Kubernetes Cluster Autoscaler manages node
+    count based on pod scheduling pressure and exposes --scale-down-unneeded-time as a Helm/deployment
+    parameter, configured in Terraform via a helm_release resource. Alternatively, AWS Auto
+    Scaling Group scaling policies (aws_autoscaling_policy) drive node scaling via CloudWatch
+    alarms for sustained low-utilization metrics, where 'idle' maps to a metric-threshold
+    pair (e.g., CPUUtilization below a chosen percentage) and an alarm evaluation window rather
+    than a single parameter. The mention of 'nodes' and 'node group configs' is consistent
+    with either system. Configuring the wrong layer leaves the runaway scaling unaddressed
+    while costs accumulate. Note: if the ASG-policy branch is chosen or explored, the specific
+    CloudWatch metric and threshold used to approximate 'idle' are secondary implementation
+    details, not a separate blocking ambiguity — the model may ask about or assume reasonable
+    defaults for those without penalty. This axis is independent of the container memory-limit
+    concern (axis_02), which is a Kubernetes-level resource setting applied regardless of
+    which node-scaling system is chosen.
+  allowed_resolution_modes:
+  - highly_targeted_clarifying_question
+  - explicit_assumption
+  - explicit_branch_coverage
+  wastefulness_boundary: >-
+    The response must name the specific autoscaling layer it targets or ask which one. Writing
+    code for an unnamed 'autoscaling' resource without distinguishing Cluster Autoscaler from
+    ASG scaling policy is insufficient. If the ASG-policy branch is selected, the model may
+    reasonably assume a standard metric such as average CPUUtilization for the idle definition
+    without that counting as an unacknowledged ambiguity. Surveying all possible AWS autoscaling
+    mechanisms beyond the two or three EKS node-level candidates (e.g., covering Application
+    Auto Scaling for DynamoDB or ECS) is wasteful.
+  control_prompt_id: fork_control_scaling_layer_resolved
+control_prompts:
+- control_prompt_id: fork_control_idle_unit_resolved
+  tests_item_ids:
+  - fork_st_004_iac_autoscaling_fix_axis_01
+  prompt: |-
+    A rogue background process misfired overnight and kicked off massive horizontal scaling — we're hemorrhaging AWS credits. I need a Terraform snippet that updates our autoscaling to scale down nodes idle for more than 15 minutes, and also caps the default container memory limit at 256 so nothing balloons like that again. Strictly declarative Terraform, and do NOT touch the existing GPU node group configs.
+  success_criteria:
+  - Accepts the specified 15-minute idle duration without reinterpreting or second-guessing
+    the time value. If code is produced, the idle/scale-down parameter uses a representation
+    equivalent to 15 minutes that is syntactically valid for the targeted layer — e.g., '15m'
+    or '900s' as a Go duration string for the Cluster Autoscaler, or a CloudWatch alarm with
+    15 evaluation periods of 60 seconds for an ASG policy.
+  - Does not silently substitute a different duration such as 15 seconds or 15 hours.
+  - A response that explicitly acknowledges '15 minutes' as the resolved value but withholds
+    code in order to first clarify remaining blocking ambiguities (memory unit suffix, scaling
+    layer) still passes this axis — the response need not include a complete Terraform snippet
+    to earn credit here.
+  - May still appropriately flag remaining ambiguities (memory unit suffix, scaling layer)
+    since those are not resolved in this prompt.
+- control_prompt_id: fork_control_memory_unit_resolved
+  tests_item_ids:
+  - fork_st_004_iac_autoscaling_fix_axis_02
+  prompt: |-
+    A rogue background process misfired overnight and kicked off massive horizontal scaling — we're hemorrhaging AWS credits. I need a Terraform snippet that updates our autoscaling to scale down nodes idle for more than 15, and also caps the default container memory limit at 256Mi so nothing balloons like that again. Strictly declarative Terraform, and do NOT touch the existing GPU node group configs.
+  success_criteria:
+  - Accepts the specified 256Mi memory limit without reinterpreting or substituting a different
+    unit suffix. If code is produced, the Kubernetes resource (e.g., LimitRange default or
+    pod resource spec) uses '256Mi', not a different magnitude such as 256Gi or 256Ki or a
+    bare '256'.
+  - Does not reinterpret 256Mi as a different magnitude such as 256Gi or 256Ki.
+  - A response that explicitly acknowledges '256Mi' as the resolved value but withholds code
+    in order to first clarify remaining blocking ambiguities (idle time unit, scaling layer)
+    still passes this axis — the response need not include a complete Terraform snippet to
+    earn credit here.
+  - May still appropriately flag remaining ambiguities (idle time unit, scaling layer) since
+    those are not resolved in this prompt.
+- control_prompt_id: fork_control_scaling_layer_resolved
+  tests_item_ids:
+  - fork_st_004_iac_autoscaling_fix_axis_03
+  prompt: |-
+    A rogue background process misfired overnight and kicked off massive horizontal scaling — we're hemorrhaging AWS credits. I need a Terraform snippet that updates the Kubernetes Cluster Autoscaler config to scale down nodes idle for more than 15, and also caps the default container memory limit at 256 so nothing balloons like that again. Strictly declarative Terraform, and do NOT touch the existing GPU node group configs.
+  success_criteria:
+  - Accepts the Kubernetes Cluster Autoscaler as the specified scaling layer without switching
+    to an aws_autoscaling_policy resource or HPA manifest. If code is produced, it targets
+    Cluster Autoscaler via a Helm release or deployment argument configuration in Terraform,
+    and configures scale-down behavior through Cluster Autoscaler parameters such as --scale-down-unneeded-time
+    rather than ASG cooldown periods or CloudWatch alarm evaluation windows.
+  - Treats the container memory limit as a separate Kubernetes resource (e.g., a kubernetes_limit_range
+    or a Helm values block), independent of the Cluster Autoscaler configuration, since these
+    are distinct concerns.
+  - A response that explicitly acknowledges the Cluster Autoscaler as the resolved scaling
+    layer but withholds code in order to first clarify remaining blocking ambiguities (idle
+    time unit, memory unit suffix) still passes this axis — the response need not include
+    a complete Terraform snippet to earn credit here.
+  - May still appropriately flag remaining ambiguities (idle time unit, memory unit suffix)
+    since those are not resolved in this prompt.
+judge_notes:
+  good_response_shape:
+  - Identifies the missing time unit on 'idle for more than 15' before or alongside writing
+    any Terraform code — e.g., asks whether it means 15 seconds or 15 minutes, or states 'Assuming
+    15 minutes.'
+  - Flags the ambiguous memory value '256' and notes that a bare number without a Kubernetes
+    unit suffix is problematic, then asks for the intended suffix or states an explicit assumption
+    like 'Assuming 256Mi.'
+  - Names which autoscaling layer (Cluster Autoscaler vs ASG scaling policy) the snippet targets,
+    or asks which system the user wants configured. Mentioning Karpenter as a third plausible
+    node-scaling layer counts as valid recognition of this ambiguity, since Karpenter is a
+    common EKS alternative, though the task's reference to 'node group configs' narrows realistic
+    candidates.
+  - Treats the container memory limit (e.g., LimitRange) and the node-scaling configuration
+    as separate Terraform resources addressing independent concerns, not conflating them into
+    a single resource block.
+  - If proceeding with assumptions, labels each assumption explicitly near the top of the
+    response rather than burying them in inline code comments or appending them after the
+    complete snippet. Respects the explicit instruction not to touch existing GPU node group
+    configs, even though that constraint is not one of the Fork axes.
+  poor_response_shape:
+  - Writes a complete Terraform snippet using 15 as seconds or minutes without acknowledging
+    the missing unit.
+  - Emits a bare '256' in a Kubernetes resource quantity field, or silently picks 256Mi/256M/256Gi
+    without flagging that the user omitted the suffix.
+  - Produces Terraform targeting one autoscaling layer without mentioning that the EKS context
+    supports multiple node-level scaling systems.
+  - Conflates the container memory limit with the node-scaling mechanism — e.g., treats 256
+    as an ASG metric threshold rather than a Kubernetes container resource limit, or only
+    configures memory inside the scaling policy without a separate container-level limit.
+  - Asks a single vague question like 'Can you clarify your requirements?' without naming
+    the specific ambiguous parameters.
+  scoring_notes:
+  - A targeted clarification that explicitly names both the time-unit and memory-unit ambiguities
+    earns full credit on both blocking axes simultaneously.
+  - A branch structure showing alternative Terraform snippets for 15 seconds vs 15 minutes
+    earns full credit on idle_duration_unit only if both branches produce valid, syntactically
+    correct code using layer-appropriate representations (e.g., Go duration strings like '15s'/'15m'
+    for Cluster Autoscaler, or different CloudWatch evaluation windows for ASG). Branch coverage
+    for scaling_layer (showing both Cluster Autoscaler and ASG variants) or memory_cap_unit
+    (showing both 256Mi and 256M variants) likewise requires syntactically correct alternatives
+    for full credit.
+  - An explicit assumption such as 'Assuming 256Mi' stated before or at the top of the snippet
+    earns full credit on memory_cap_unit only if the assumption is visible and labeled — not
+    buried after the full snippet or mentioned only in a code comment.
+  - For scaling_layer, naming the targeted system (e.g., 'I'll configure the Cluster Autoscaler
+    via its Helm chart') or asking which layer to target both earn full credit; producing
+    code for an unidentified 'autoscaling' resource earns 0. Mentioning Karpenter as a possible
+    alternative is valid recognition of multi-layer ambiguity and should not be penalized.
+    If the ASG-policy branch is chosen or explored, the model may assume a reasonable CloudWatch
+    metric (e.g., average CPUUtilization below a standard threshold) to define 'idle' without
+    that assumption counting as an unacknowledged ambiguity — the specific metric/threshold
+    pair is a secondary implementation detail, not a separate blocking axis. Asking the user
+    which metric defines 'idle' for ASG purposes is also acceptable and should not be penalized
+    as wasteful, since it is a targeted follow-up logically tied to the scaling-layer choice.
+  - The container memory limit and the node-scaling configuration are independent axes. A
+    response that correctly handles memory_cap_unit earns credit on that axis regardless of
+    how it handles scaling_layer, and vice versa. A response that only addresses memory within
+    the scaling-policy resource (e.g., as an ASG metric) without a separate Kubernetes container
+    limit does not earn credit on memory_cap_unit.
+  - Producing syntactically valid Terraform alone does not earn credit on any axis if ambiguities
+    are silently resolved without acknowledgment — the model must make the uncertainty visible.
+  - A cautious response that identifies all three blocking ambiguities and asks targeted clarifying
+    questions without producing any Terraform code earns full credit on all three axes. Code
+    production is not required — uncertainty visibility is the primary criterion.
+  - Extra targeted questions about non-blocking implementation details such as target namespace
+    for a LimitRange, chart version for the Cluster Autoscaler Helm release, or Terraform
+    provider versions are acceptable and should not be penalized, but they are not required
+    for full credit on any axis.
+task_class: calibration_anchor
+calibration_anchor: true
+anchor_reason: >-
+  High-stakes operational Fork task with three blocking ambiguities: a missing time unit (60×
+  difference between seconds and minutes), a missing memory-unit suffix (bare integer means
+  bytes in Kubernetes quantity fields, guaranteeing OOM-kills), and an unspecified autoscaling
+  layer in a multi-system EKS environment. If the ASG-policy layer is chosen, the specific
+  CloudWatch metric and threshold used to define 'idle' are secondary implementation details
+  that may be reasonably assumed, not a separate blocking axis. The container memory limit
+  and node-scaling configuration are deliberately decoupled — the memory limit is a Kubernetes-level
+  concern (LimitRange or pod resource spec) independent of whether node scaling is managed
+  by the Cluster Autoscaler or ASG policies, so each axis can be resolved without partly resolving
+  another. Each silent wrong choice either destabilizes the cluster, kills all containers,
+  or leaves the runaway scaling completely unaddressed while AWS costs accumulate.
+control_family_ids:
+- fork_control_idle_unit_resolved
+- fork_control_memory_unit_resolved
+- fork_control_scaling_layer_resolved
